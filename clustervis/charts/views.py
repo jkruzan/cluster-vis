@@ -1,53 +1,14 @@
-# from django.http import JsonResponse
-   
 from django.shortcuts import render
-from django.views.generic import View
-   
-from rest_framework.views import APIView
-from rest_framework.response import Response
-   
-class HomeView(View):
-    def get(self, request, *args, **kwargs):
-        return render(request, 'charts/index.html')
-   
-   
-####################################################
-   
-## if you don't want to user rest_framework
-   
-# def get_data(request, *args, **kwargs):
-#
-# data ={
-#             "sales" : 100,
-#             "person": 10000,
-#     }
-#
-# return JsonResponse(data) # http response
-   
-   
-#######################################################
-   
-## using rest_framework classes
-   
-class ChartData(APIView):
-    authentication_classes = []
-    permission_classes = []
-   
-    def get(self, request, format = None):
-        labels = [
-            'January',
-            'February', 
-            'March', 
-            'April', 
-            'May', 
-            'June', 
-            'July'
-            ]
-        chartLabel = "my data"
-        chartdata = [0, 10, 5, 2, 20, 30, 45]
-        data ={
-                     "labels":labels,
-                     "chartLabel":chartLabel,
-                     "chartdata":chartdata,
-             }
-        return Response(data)
+from plotly.offline import plot
+from plotly.graph_objs import Scatter
+
+def index(request):
+    x_data = [0,1,2,3]
+    y_data = [x**2 for x in x_data]
+    plot_div = plot([Scatter(x=x_data, y=y_data,
+                        mode='lines', name='test',
+                        opacity=0.8, marker_color='green')],
+               output_type='div',
+               show_link=False,
+               link_text="")
+    return render(request, "charts/index.html", context={'plot_div': plot_div})
