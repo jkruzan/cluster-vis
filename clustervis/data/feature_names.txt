@@ -1,0 +1,40 @@
+Unique ID
+Cell ID
+Experimental Condition
+Time
+Perimeter
+Area
+Eccentricity
+Ellipse Major Axis
+Ellipse Minor Axis
+Ellipse Area
+Ellipse Perimeter
+Ellipse Fit
+Circular Diameter
+Circular Area
+Circular Fit
+Maximum Feret Diameter
+Minimum Feret Diameter
+Mean Curvature
+Standard Deviation Curvature
+Number of Protrusions
+Maximum Curvature
+Minimum Curvature
+Extent
+Solidity
+Compactness
+Elongation
+Circularity
+Complexity
+Orientation Alignment Score
+Branch Alignment Score
+Maximum Branch Length
+Velocity
+Migration Alignment Score
+Hu's invariant image moment: 1
+Hu's invariant image moment: 2
+Hu's invariant image moment: 3
+Hu's invariant image moment: 4
+Hu's invariant image moment: 5
+Hu's invariant image moment: 6
+Hu's invariant image moment: 7

@@ -8,6 +8,7 @@ Dependencies
 - `conda`
 
 Create a virtual environment for this project with `conda env create -f env.yml`.
+Activate the virtual environment with `conda activate cvis`.
 
 Start the server by navigating to the `clustervis/` directory containing `manage.py` and 
 run `python manage.py runserver`.
