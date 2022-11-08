@@ -33,7 +33,7 @@ def features_form(request):
     if request.method == 'POST':
         form = FeaturesForm(request.POST)
         if form.is_valid():
-            return HttpResponseRedirect('DIRECT RESPONSE')
+            return HttpResponseRedirect('/chart')
     else: 
         form = FeaturesForm()
     return render(request, 'charts/form.html', {form: form})

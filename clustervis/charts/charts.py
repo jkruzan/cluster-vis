@@ -34,5 +34,5 @@ def get_parallel_coordinates_chart(df, colored_feat, features):
     fig = px.parallel_coordinates(df.sample(frac=0.001), color=colored_feat,
                                 dimensions=features,
                                 color_continuous_scale=px.colors.diverging.Tealrose,
-                                color_continuous_midpoint=df[colored_feat].median())
+                                color_continuous_midpoint=df[colored_feat].max()/2)
     return plot(fig,output_type='div',show_link=False,link_text="")
