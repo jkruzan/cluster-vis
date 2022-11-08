@@ -18,20 +18,21 @@
 		<h1>Cluster-Vis</h1>
 	</center>
 
-  <form action="/chart/" method="post">
-    <div class="featurelist">
-      {% csrf_token %}
-      {{ form }}
+  <h2>Parallel-Coordinates Plot:</h2>
+    <form action="/chart/" method="post">
+      <div class="featurelist">
+        {% csrf_token %}
+        {{ form }}
       </div>
+      <br>
       <div>
-          <br>
-          <input type="submit" value="Submit">
+        <input type="submit" value="Submit">
       </div>
-  </form>
-  <br>
-
-  {% autoescape off %}
-  {{ plot_div }}
-  {% endautoescape %}
+    </form>
+    <br>
+    {% autoescape off %}
+    {{ plot_div }}
+    {% endautoescape %}
+  <hr>
 </body>
 </html>

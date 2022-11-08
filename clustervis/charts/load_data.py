@@ -25,7 +25,7 @@ def get_data_frame():
     raw_data = get_raw_data()
     feature_names = get_feature_names()
     df = pd.DataFrame(raw_data, columns=feature_names).set_index('Unique ID')
-    df = df[df['Maximum Curvature'] < 10]
-    df = df[df['Circularity'] < 4]
-    df = df[df['Circular Diameter'] < 1]
+    # df = df[df['Maximum Curvature'] < 10]
+    # df = df[df['Circularity'] < 4]
+    # df = df[df['Circular Diameter'] < 1]
     return df
