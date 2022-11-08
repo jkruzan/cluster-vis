@@ -13,7 +13,7 @@ def get_feature_names():
     file = open(path, "r")
     names = file.readlines()
     names = [name.strip('\n') for name in names]
-    return names
+    return np.array(names)
 
 def get_features_and_conditions():
     raw_data = get_raw_data()

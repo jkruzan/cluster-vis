@@ -23,10 +23,11 @@ def get_basic_parallel_coords_chart():
                                             'petal_length']
     return get_parallel_coordinates_chart(df, colored_feat, features)
 
-def get_cell_parallel_coordinates_chart():
+def get_cell_parallel_coordinates_chart(features=None):
     df = get_data_frame()
     colored_feat = 'Experimental Condition'
-    features = ['Experimental Condition', 'Circularity', 'Maximum Curvature', 'Circular Diameter', 'Circular Fit']
+    if features is None:
+        features = ['Experimental Condition', 'Velocity', 'Elongation']
     return get_parallel_coordinates_chart(df, colored_feat, features)
 
 def get_parallel_coordinates_chart(df, colored_feat, features):

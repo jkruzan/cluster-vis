@@ -2,8 +2,7 @@
 
 A Django web app to aid in the visual analysis of clustering.
 
-Currently shows the list of features on the homepage and a
-parallel coordinates plot at `/chart`.
+The homepage currently lists all features and choosing features brings you to a `/chart` page where a parallel coordinates plot with those features is shown.
 
 ## Setup
 Dependencies
