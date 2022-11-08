@@ -22,7 +22,7 @@ from django.urls import path
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('chart/', views.charts),
+    path('chart/', views.ParallelCoords.as_view()),
     path('', views.index),
     path('test/', views.test)
     # path('test-api', views.get_data),
