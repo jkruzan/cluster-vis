@@ -5,11 +5,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Chart</title>
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <style>
+    .featurelist{
+    -webkit-column-count: 4; /* Chrome, Safari, Opera */
+    -moz-column-count: 4; /* Firefox */
+    column-count: 4;
+    }
+</style>
 </head>
 <body>
-	<center class="row">
+  <center class="row">
 		<h1>Cluster-Vis</h1>
 	</center>
+
+  <form action="/chart/" method="post">
+    <div class="featurelist">
+      {% csrf_token %}
+      {{ form }}
+      </div>
+      <div>
+          <br>
+          <input type="submit" value="Submit">
+      </div>
+  </form>
+  <br>
+
   {% autoescape off %}
   {{ plot_div }}
   {% endautoescape %}

@@ -1,8 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.views import View
-from .load_data import get_feature_names, get_data_frame
-from .charts import get_basic_chart
+from .load_data import get_feature_names
 from .charts import get_cell_parallel_coordinates_chart as gcpcc
 from .forms import FeaturesForm
 from django.http import HttpResponseRedirect
@@ -12,23 +11,28 @@ FEATURE_NAMES = get_feature_names()
 
 class ParallelCoords(View):
     template_name = 'charts/index.html'
-    selected_features = ['Experimental Condition', 'Velocity', 'Elongation']
+    feature_indexes = [2,4,31]
 
     def post(self, request):
         plot_div = self.get_plot(request, True)
-        return render(request, "charts/index.html", context={'plot_div': plot_div})
+        form_div = self.get_form()
+        return render(request, "charts/index.html", context={'plot_div': plot_div, 'form': form_div})
 
     def get(self, request):
         plot_div = self.get_plot(request, False)
-        return render(request, "charts/index.html", context={'plot_div': plot_div})
+        form_div = self.get_form()
+        return render(request, "charts/index.html", context={'plot_div': plot_div, 'form': form_div})
 
     def get_plot(self, request, is_post):
         if is_post:
             form = FeaturesForm(request.POST)
             if form.is_valid():
-                features = form.cleaned_data['features_field']
-                self.selected_features = np.take(FEATURE_NAMES, features)
-        return gcpcc(self.selected_features)
+                self.feature_indexes = form.cleaned_data['features_field']
+        selected_features = np.take(FEATURE_NAMES, self.feature_indexes)
+        return gcpcc(selected_features)
+
+    def get_form(self):
+        return FeaturesForm(initial={'features_field': self.feature_indexes})
 
 def index(request):
     if request.method == 'POST':

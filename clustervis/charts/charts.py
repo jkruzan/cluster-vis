@@ -16,7 +16,6 @@ def get_basic_chart():
     return plot_div
 
 def get_basic_parallel_coords_chart():
-
     df = px.data.iris()
     colored_feat = "species_id"
     features = ['sepal_width', 'sepal_length', 'petal_width',
