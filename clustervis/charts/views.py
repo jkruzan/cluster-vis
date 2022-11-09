@@ -10,7 +10,8 @@ class Charts(View):
     def post(self, request):
         form = FeaturesForm(request.POST)
         if form.is_valid():
-            self.feature_indexes = form.cleaned_data['features_field']
+            indexes = form.cleaned_data['features_field']
+            self.feature_indexes = [int(i) for i in indexes]
         return self.get_rendering(request)
 
     def get(self, request):

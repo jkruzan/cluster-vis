@@ -15,6 +15,13 @@ def get_feature_names():
     names = [name.strip('\n') for name in names]
     return np.array(names)
 
+def get_short_feature_names():
+    path = './data/short_feature_names.txt'
+    file = open(path, "r")
+    names = file.readlines()
+    names = [name.strip('\n') for name in names]
+    return np.array(names)
+
 def get_data_frame():
     raw_data = get_raw_data()
     feature_names = get_feature_names()

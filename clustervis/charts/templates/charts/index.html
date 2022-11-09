@@ -11,22 +11,34 @@
     -moz-column-count: 4; /* Firefox */
     column-count: 4;
     }
+    h1 {
+      font-family: 'Copperplate', fantasy;
+      font-size: 3em;
+      margin-block-start: 0em;
+      margin-block-end: 0em;
+    }
+    h2{
+      font-family: 'Copperplate', fantasy;
+    }
+    body{
+      background-color: #f2f5f3
+    }
 </style>
 </head>
 <body>
   <center class="row">
 		<h1>Cluster-Vis</h1>
 	</center>
-
+<hr>
   <h2>Features:</h2>
-    <form action="/chart/" method="post">
+    <form action="/" method="post">
       <div class="featurelist">
         {% csrf_token %}
         {{ form }}
       </div>
       <br>
       <div>
-        <input type="submit" value="Submit">
+        <input type="submit" value="Visualize">
       </div>
     </form>
     <br>
