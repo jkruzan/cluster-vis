@@ -1,0 +1,40 @@
+UUID
+Cell ID
+Exp Cond
+Time
+Perimeter
+Area
+Eccentricity
+Ellipse Major Axis
+Ellipse Minor Axis
+Ellipse Area
+Ellipse Perimeter
+Ellipse Fit
+Circular Diameter
+Circular Area
+Circular Fit
+Max Feret D.
+Min Feret D.
+Mean Curvature
+StD Curvature
+Number of Protrusions
+Maximum Curvature
+Minimum Curvature
+Extent
+Solidity
+Compactness
+Elongation
+Circularity
+Complexity
+Orien. Ali. Score
+Branch Ali. Score
+Max Branch Length
+Velocity
+Mig. Ali. Score
+Hu Mom. 1
+Hu Mom. 2
+Hu Mom. 3
+Hu Mom. 4
+Hu Mom. 5
+Hu Mom. 6
+Hu Mom. 7
