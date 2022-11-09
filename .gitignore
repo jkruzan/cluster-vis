@@ -2,3 +2,4 @@ __pycache__/
 *.pyc
 
 clustervis/data/data_normalized.mat
+clustervis/data/BinaryImages.mat

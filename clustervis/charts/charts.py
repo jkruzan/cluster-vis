@@ -14,12 +14,12 @@ def get_plots(feature_indexes):
     return par_plot, scatter_mat
 
 def get_plot(features, plot_type, labels=None):
-    df = get_data_frame()
-    colored_feat = 'Experimental Condition'
-    df[colored_feat] = df[colored_feat].astype(int)
-    df = df.sample(frac=0.001)
     if labels is None:
         labels = features 
+    df = get_data_frame()
+    colored_feat = 'Cluster Label'
+    df[colored_feat] = df[colored_feat].astype(int)
+    df = df.sample(frac=0.001)
     fig = plot_type(df, color=colored_feat,
                         dimensions=features,
                         labels=labels)
