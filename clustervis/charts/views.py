@@ -3,33 +3,38 @@ from django.http import HttpResponse
 from django.views import View
 from .load_data import get_feature_names
 from .charts import get_cell_parallel_coordinates_chart as gcpcc
+from .charts import get_cell_scatter_matrix_chart as gcsmc
 from .forms import FeaturesForm
 from django.http import HttpResponseRedirect
 import numpy as np
 
 FEATURE_NAMES = get_feature_names()
 
-class ParallelCoords(View):
+class Charts(View):
     template_name = 'charts/index.html'
     feature_indexes = [2,4,31]
 
     def post(self, request):
-        plot_div = self.get_plot(request, True)
+        parallel_coords, scatter_matrix = self.get_plots(request, True)
         form_div = self.get_form()
-        return render(request, "charts/index.html", context={'plot_div': plot_div, 'form': form_div})
+        return render(request, self.template_name, 
+                context={'parallel_coords_plot': parallel_coords, 'scatter_matrix_plot': scatter_matrix, 'form': form_div})
 
     def get(self, request):
-        plot_div = self.get_plot(request, False)
+        parallel_coords, scatter_matrix = self.get_plots(request, False)
         form_div = self.get_form()
-        return render(request, "charts/index.html", context={'plot_div': plot_div, 'form': form_div})
+        return render(request, self.template_name, 
+                context={'parallel_coords_plot': parallel_coords, 'scatter_matrix_plot': scatter_matrix, 'form': form_div})
 
-    def get_plot(self, request, is_post):
+    def get_plots(self, request, is_post):
         if is_post:
             form = FeaturesForm(request.POST)
             if form.is_valid():
                 self.feature_indexes = form.cleaned_data['features_field']
         selected_features = np.take(FEATURE_NAMES, self.feature_indexes)
-        return gcpcc(selected_features)
+        parallel_coords = gcpcc(selected_features)
+        scatter_matrix = gcsmc(selected_features)
+        return parallel_coords, scatter_matrix
 
     def get_form(self):
         return FeaturesForm(initial={'features_field': self.feature_indexes})
@@ -43,22 +48,7 @@ def index(request):
         form = FeaturesForm()
     return render(request, 'charts/form.html', {'form': form})
 
-def features_form(request):
-    if request.method == 'POST':
-        form = FeaturesForm(request.POST)
-        if form.is_valid():
-            return HttpResponseRedirect('/chart')
-    else: 
-        form = FeaturesForm()
-    return render(request, 'charts/form.html', {form: form})
 
-def test(request):
-    if request.method == 'POST':
-        form = FeaturesForm(request.POST)
-        if form.is_valid():
-            selected_features = form.cleaned_data['features_field']
-            feat_names = np.take(FEATURE_NAMES, selected_features)
-            feat_names = [name + '<br>' for name in feat_names]
-            return HttpResponse(feat_names)
-    else:
-        return HttpResponse("Navigated to this page without posting")
+# # Scatter Matrix
+# class ScatterMatrix(View):
+    

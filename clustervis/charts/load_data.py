@@ -15,12 +15,6 @@ def get_feature_names():
     names = [name.strip('\n') for name in names]
     return np.array(names)
 
-def get_features_and_conditions():
-    raw_data = get_raw_data()
-    cell_cond = raw_data[:,3]
-    feat_arr = raw_data[:,4:]
-    return feat_arr, cell_cond
-
 def get_data_frame():
     raw_data = get_raw_data()
     feature_names = get_feature_names()

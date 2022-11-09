@@ -18,7 +18,7 @@
 		<h1>Cluster-Vis</h1>
 	</center>
 
-  <h2>Parallel-Coordinates Plot:</h2>
+  <h2>Features:</h2>
     <form action="/chart/" method="post">
       <div class="featurelist">
         {% csrf_token %}
@@ -30,9 +30,14 @@
       </div>
     </form>
     <br>
+    <h2>Parallel-Coordinates Plot:</h2>
     {% autoescape off %}
-    {{ plot_div }}
+    {{ parallel_coords_plot }}
     {% endautoescape %}
   <hr>
+    <h2>Scatterplot Matrix:</h2>
+    {% autoescape off %}
+    {{ scatter_matrix_plot }}
+    {% endautoescape %}
 </body>
 </html>

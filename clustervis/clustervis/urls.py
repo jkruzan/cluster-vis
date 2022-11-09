@@ -22,8 +22,6 @@ from django.urls import path
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('chart/', views.ParallelCoords.as_view()),
+    path('chart/', views.Charts.as_view()),
     path('', views.index),
-    path('test/', views.test)
-    # path('test-api', views.get_data),
 ]
