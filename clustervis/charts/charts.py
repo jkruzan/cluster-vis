@@ -5,9 +5,8 @@ import numpy as np
 
 FEATURE_NAMES = get_feature_names()
 
-def get_plots(features):
-    features = np.take(FEATURE_NAMES, features)
-    # return get_parallel_coordinates(features), get_scatter_matrix(features)
+def get_plots(feature_indexes):
+    features = np.take(FEATURE_NAMES, feature_indexes)
     return get_plot(features, px.parallel_coordinates), get_plot(features, px.scatter_matrix)
 
 def get_plot(features, plot_type):

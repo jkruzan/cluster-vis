@@ -1,15 +1,7 @@
 from django.shortcuts import render
-from django.http import HttpResponse
 from django.views import View
-from django.http import HttpResponseRedirect
-import plotly.express as px
-from .load_data import get_feature_names
 from .charts import get_plots
 from .forms import FeaturesForm
-
-import numpy as np
-
-FEATURE_NAMES = get_feature_names()
 
 class Charts(View):
     template_name = 'charts/index.html'
@@ -29,12 +21,3 @@ class Charts(View):
         form_div = FeaturesForm(initial={'features_field': self.feature_indexes})
         context={'parallel_coords_plot': parallel_coords, 'scatter_matrix_plot': scatter_matrix, 'form': form_div}
         return render(request=request, template_name=self.template_name, context=context)
-
-def index(request):
-    if request.method == 'POST':
-        form = FeaturesForm(request.POST)
-        if form.is_valid():
-            return HttpResponseRedirect('DIRECT RESPONSE')
-    else: 
-        form = FeaturesForm()
-    return render(request, 'charts/form.html', {'form': form})
