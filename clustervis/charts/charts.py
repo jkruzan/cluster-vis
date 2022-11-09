@@ -1,39 +1,20 @@
-from django.shortcuts import render
 from plotly.offline import plot
-from plotly.graph_objs import Scatter
 from .load_data import get_data_frame, get_feature_names
 import plotly.express as px
+import numpy as np
 
-# Test function to get a chart with toy data
-def get_basic_parallel_coords_chart():
-    df = px.data.iris()
-    colored_feat = "species_id"
-    features = ['sepal_width', 'sepal_length', 'petal_width',
-                                            'petal_length']
-    return get_parallel_coordinates_chart(df, colored_feat, features)
+FEATURE_NAMES = get_feature_names()
 
-######################### Parallel Coordinates #########################
+def get_plots(features):
+    features = np.take(FEATURE_NAMES, features)
+    # return get_parallel_coordinates(features), get_scatter_matrix(features)
+    return get_plot(features, px.parallel_coordinates), get_plot(features, px.scatter_matrix)
 
-def get_cell_parallel_coordinates_chart(features):
+def get_plot(features, plot_type):
     df = get_data_frame()
     colored_feat = 'Experimental Condition'
-    return get_parallel_coordinates_chart(df.sample(frac=0.001), colored_feat, features)
-
-def get_parallel_coordinates_chart(df, colored_feat, features):
-    fig = px.parallel_coordinates(df, color=colored_feat,
-                                dimensions=features,
-                                color_continuous_scale=px.colors.diverging.Tealrose,
-                                color_continuous_midpoint=df[colored_feat].max()/2)
-    return plot(fig,output_type='div',show_link=False,link_text="")
-
-######################### Scatter-plot Matrix #########################
-
-def get_cell_scatter_matrix_chart(features):
-    df = get_data_frame()
-    colored_feat = 'Experimental Condition'
-    return get_scatter_matrix_chart(df, colored_feat, features)
-
-def get_scatter_matrix_chart(df, colored_feat, features):
-    fig = px.scatter_matrix(df, color=colored_feat,
+    df[colored_feat] = df[colored_feat].astype(int)
+    df = df.sample(frac=0.001)
+    fig = plot_type(df, color=colored_feat,
                                 dimensions=features)
     return plot(fig,output_type='div',show_link=False,link_text="")
