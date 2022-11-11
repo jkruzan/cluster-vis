@@ -3,6 +3,12 @@ import pandas as pd
 from scipy.io import loadmat
 from PIL import Image
 
+def get_embedded_clusters(path=None):
+    if path is None:
+        path = './data/labels_and_embedding.txt'
+    df = pd.read_csv(path, sep=',', header=None, names=['Unique ID', 'Cluster Label', 'Embed1', 'Embed2']).set_index('Unique ID')
+    return df
+
 def get_image(unique_id):
     path = '../../binary_images/binary_image_' + str(unique_id) + '.bmp'
     return Image.open(path)

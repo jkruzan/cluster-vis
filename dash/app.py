@@ -2,8 +2,8 @@ import io, base64
 from dash import Dash, dcc, html, no_update, Input, Output
 import plotly.express as px
 
-from load_data import get_feature_names, get_image
-from charts import get_plots, get_plot
+from load_data import get_feature_names, get_image, get_embedded_clusters
+from charts import get_plots, get_plot, embed_scatter
 # from charts import bar_chart
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
@@ -38,6 +38,17 @@ app.layout = html.Div([
     # # Bar chart
     # html.H3("Bar Chart"),
     # dcc.Graph(id='bar-char', figure=bar_chart()),
+
+    # Embedded features scatter plot
+    
+    html.Hr(),
+    html.H3('Embedded Features'),
+    html.Div(
+    className="container",
+    children=[
+        html.Center(dcc.Graph(id='embed-scatter', figure=embed_scatter())),
+        dcc.Tooltip(id="embed-scatter-tooltip", direction='bottom'),
+    ]),
 ])
 
 
@@ -52,7 +63,18 @@ def update_plots(new_features):
     parallel_fig = get_plot(new_features, px.parallel_coordinates)
     return parallel_fig, scatter_matrix
 
-## Callback to show images on hover
+
+
+@app.callback(
+    Output('embed-scatter-tooltip', "show"),
+    Output('embed-scatter-tooltip', "bbox"),
+    Output('embed-scatter-tooltip', "children"),
+    Output('embed-scatter-tooltip', "direction"),
+    Input('embed-scatter', 'hoverData')
+)
+def scatter_image_on_hover(hover_data):
+    return image_on_hover(hover_data)
+
 @app.callback(
     Output('scatter-matrix-tooltip', "show"),
     Output('scatter-matrix-tooltip', "bbox"),
@@ -60,6 +82,11 @@ def update_plots(new_features):
     Output('scatter-matrix-tooltip', "direction"),
     Input('scatter-matrix', 'hoverData')
 )
+def scatter_image_on_hover(hover_data):
+    return image_on_hover(hover_data)
+
+
+## Callback to show images on hover
 def image_on_hover(hover_data):
     if hover_data is None:
         return False, no_update, no_update, no_update
@@ -88,6 +115,8 @@ def image_on_hover(hover_data):
     ]
 
     return True, bbox, children, direction
+
+
 if __name__ == '__main__':
     app.run_server(debug=True)
 

@@ -1,5 +1,5 @@
 from plotly.offline import plot
-from load_data import get_data_frame, get_feature_names, get_short_feature_names
+from load_data import get_data_frame, get_feature_names, get_short_feature_names, get_embedded_clusters
 import plotly.express as px
 import numpy as np
 
@@ -27,12 +27,20 @@ def get_plot(features, plot_type, use_labels=False):
     return fig
 
 def scatter_matrix(df, color, dimensions, labels):
-    fig = px.scatter_matrix(df, color=color, dimensions=dimensions, labels=labels, hover_data={df.index.name: df.index})
+    cluster_min = df['Cluster Label'].min()
+    cluster_max = df['Cluster Label'].max()
+    df['Cluster Label'] = 'Cluster ' + df['Cluster Label'].astype(str)
+    fig = px.scatter_matrix(df, color=color, 
+                            dimensions=dimensions, 
+                            labels=labels, 
+                            hover_data={df.index.name: df.index},
+                            category_orders={'Cluster Label':["Cluster "+ str(i) for i in range(cluster_min, cluster_max+1)]}
+                            )
     fig.update_traces(
         hoverinfo='none',
         hovertemplate=None,
     )
-    fig.update_layout(hovermode='closest')
+    fig.update_layout(legend=dict(bgcolor='white'))
     return fig
 
 # def bar_chart():
@@ -40,3 +48,20 @@ def scatter_matrix(df, color, dimensions, labels):
 #     df = df.sample(frac=0.001)
 #     fig = px.bar(df, x='Experimental Condition', y='Cluster Label', color='Cluster Label')
 #     return fig
+
+def embed_scatter():
+    df = get_embedded_clusters()
+    cluster_min = df['Cluster Label'].min()
+    cluster_max = df['Cluster Label'].max()
+    df['Cluster Label'] = 'Cluster ' + df['Cluster Label'].astype(str)
+    fig = px.scatter(df, x='Embed1', y='Embed2', 
+                    color='Cluster Label', 
+                    hover_data={df.index.name: df.index},
+                    category_orders={'Cluster Label':["Cluster "+ str(i) for i in range(cluster_min, cluster_max+1)]}
+                    )
+    fig.update_traces(
+        hoverinfo='none',
+        hovertemplate=None,
+    )
+    fig.update_layout(autosize=False, margin=dict(t=10))
+    return fig
