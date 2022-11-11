@@ -4,7 +4,7 @@ from scipy.io import loadmat
 from PIL import Image
 
 def get_image(unique_id):
-    path = './data/binary_images/binary_image_' + str(unique_id) + '.bmp'
+    path = '../../binary_images/binary_image_' + str(unique_id) + '.bmp'
     return Image.open(path)
 
 def get_raw_cell_data(path=None):

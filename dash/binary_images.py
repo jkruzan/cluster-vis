@@ -16,5 +16,5 @@ for i in tqdm(range(len(image_data))):
     im = image_data[i][0]
     image_file = Image.new('1', im.shape)
     image_file.putdata(im.flatten())
-    file_name = './data/binary_images/binary_image_'+str(i)+'.bmp'
+    file_name = '../../binary_images/binary_image_'+str(i)+'.bmp'
     image_file.save(file_name)    

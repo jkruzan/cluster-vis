@@ -4,6 +4,7 @@ import plotly.express as px
 
 from load_data import get_feature_names, get_image
 from charts import get_plots, get_plot
+# from charts import bar_chart
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
@@ -34,6 +35,9 @@ app.layout = html.Div([
             dcc.Graph(id='scatter-matrix'),
             dcc.Tooltip(id="scatter-matrix-tooltip", direction='bottom'),
         ]),
+    # # Bar chart
+    # html.H3("Bar Chart"),
+    # dcc.Graph(id='bar-char', figure=bar_chart()),
 ])
 
 
