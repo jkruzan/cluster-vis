@@ -16,7 +16,7 @@ app.layout = html.Div([
     # Feature Selection
     html.H3("Features:"),
     dcc.Dropdown(get_feature_names(), 
-                options=['Experimental Condition', 'Area', 'Cluster Label'], 
+                value=['Experimental Condition', 'Area', 'Cluster Label'], 
                 multi=True, 
                 id='selected-features'),
     
