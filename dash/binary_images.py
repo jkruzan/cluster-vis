@@ -1,4 +1,8 @@
-import os
+## A python script to individually save all images into data/binary_images
+## Loading the images takes a few minutes, after that, a progress bar will
+## appear and show how many images have been saved
+
+## Be sure to create the directory data/binary_images before running
 import mat73
 from PIL import Image
 from tqdm import tqdm
