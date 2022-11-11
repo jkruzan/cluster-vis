@@ -39,14 +39,9 @@ app.layout = html.Div([
     Output('scatter-matrix', 'figure'),
     Input('selected-features', 'value'))
 def update_plots(new_features):
-    print("Updating parallel plot ********************************")
     print(new_features)
     parallel_fig, scatter_matrix = get_plots(new_features)
     parallel_fig = get_plot(new_features, px.parallel_coordinates)
-    print("HI ********************************")
-    gbi()
-    print("BYEEE")
-    print("Shouldve printed")
     return parallel_fig, scatter_matrix
 
 
