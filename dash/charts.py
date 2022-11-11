@@ -31,4 +31,9 @@ def scatter_matrix(df, color, dimensions, labels):
     # hover += dimensions
     # hover = {feat: False for feat in FEATURE_NAMES}
     fig = px.scatter_matrix(df, color=color, dimensions=dimensions, labels=labels, hover_data={df.index.name: df.index})
+    fig.update_traces(
+        hoverinfo='none',
+        hovertemplate=None,
+    )
+    fig.update_layout(hovermode='closest')
     return fig
