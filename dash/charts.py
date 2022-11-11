@@ -67,6 +67,25 @@ def embed_scatter():
     fig.update_layout(autosize=False, margin=dict(t=10))
     return fig
 
+def correlation_matrix(cluster):
+    """
+    Correlation matrix fro
+    """
+    # Get data
+    df = get_data_frame().astype(float)
+    # Filter out desired cluster
+    df = df[df['Cluster Label']==int(cluster[-1])]
+    df.rename(columns={old: new for old, new in zip(df.columns, get_short_feature_names()[1:])}, inplace=True)
+    df.drop(labels='Cluster', axis=1, inplace=True)
+    corr_matrix = df.corr()
+    print("CORRERLKJAD SSHAPE: ", corr_matrix.shape)
+    fig = px.imshow(corr_matrix, 
+                    color_continuous_scale='RdBu_r', 
+                    origin='lower',
+                    width=700, height=700)
+    fig.update_layout(autosize=True)
+    return fig
+
 
 def get_cluster_order(df):
     """
