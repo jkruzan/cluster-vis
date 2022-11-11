@@ -1,6 +1,14 @@
 import numpy as np
 import pandas as pd
 from scipy.io import loadmat
+import mat73
+def get_binary_images(path=None):
+    if path is None:
+        path = './data/BinaryImages.mat'
+    raw_data = mat73.loadmat(path)
+    raw_data = raw_data['DataFileNorm']
+    print("HKJHKJFGKJHEGFLKJEGRLKJGELKJRGWERLJHWEGRKWEJHRGWEKRJHWGRWEKJ")
+    print(raw_data.shape)
 
 def get_raw_cell_data(path=None):
     if path is None:

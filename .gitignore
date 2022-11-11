@@ -3,3 +3,5 @@ __pycache__/
 
 clustervis/data/data_normalized.mat
 clustervis/data/BinaryImages.mat
+
+dash/data/
