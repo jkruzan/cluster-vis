@@ -1,7 +1,6 @@
 __pycache__/
 *.pyc
 
-clustervis/data/data_normalized.mat
-clustervis/data/BinaryImages.mat
-
-dash/data/
+dash/data/data_normalized.mat
+dash/data/BinaryImages.mat
+dash/data/binary_images/
