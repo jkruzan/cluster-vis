@@ -2,30 +2,28 @@ import io, base64
 from dash import Dash, dcc, html, no_update, Input, Output
 import plotly.express as px
 
-from load_data import get_feature_names, get_image, get_embedded_clusters
-from charts import get_plots, get_plot, embed_scatter
-# from charts import bar_chart
+from load_data import get_feature_names, get_image
+from charts import embed_scatter, parallel_coordinates, scatter_matrix
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
 app = Dash(__name__, external_stylesheets=external_stylesheets)
 
-styles = {
-    'pre': {
-        'border': 'thin lightgrey solid',
-        'overflowX': 'scroll'
-    }
-}
-
 app.layout = html.Div([
     # Header
     html.H1("Cluster Vis"),
+    
     # Feature Selection
     html.H3("Features:"),
-    dcc.Dropdown(get_feature_names(), ['Experimental Condition', 'Area', 'Cluster Label'], multi=True, id='selected-features'),
+    dcc.Dropdown(get_feature_names(), 
+                options=['Experimental Condition', 'Area', 'Cluster Label'], 
+                multi=True, 
+                id='selected-features'),
+    
     # Parallel Coordinates
     html.H3("Parallel Coordinates Plot"),
     dcc.Graph(id='parallel-coords'),
+
     # Scatter Matrix
     html.Hr(),
     html.H3("Scatter Matrix"),
@@ -35,12 +33,8 @@ app.layout = html.Div([
             dcc.Graph(id='scatter-matrix'),
             dcc.Tooltip(id="scatter-matrix-tooltip", direction='bottom'),
         ]),
-    # # Bar chart
-    # html.H3("Bar Chart"),
-    # dcc.Graph(id='bar-char', figure=bar_chart()),
 
-    # Embedded features scatter plot
-    
+    # Embedded features scatter plot 
     html.Hr(),
     html.H3('Embedded Features'),
     html.Div(
@@ -59,9 +53,9 @@ app.layout = html.Div([
     Output('scatter-matrix', 'figure'),
     Input('selected-features', 'value'))
 def update_plots(new_features):
-    parallel_fig, scatter_matrix = get_plots(new_features)
-    parallel_fig = get_plot(new_features, px.parallel_coordinates)
-    return parallel_fig, scatter_matrix
+    parallel_fig = parallel_coordinates(new_features)
+    scatter_mat = scatter_matrix(new_features)
+    return parallel_fig, scatter_mat
 
 
 
@@ -103,6 +97,9 @@ def image_on_hover(hover_data):
     bbox = hover_data['bbox']
 
     y = hover_data["y"]
+    # If y is the cluster data, cast it to a string
+    if type(y) is str:
+        y = int(y[-1])
     direction = "bottom" if y > 1.5 else "top"
 
     caption = 'Unique ID: ' + str(id)
