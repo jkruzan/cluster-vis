@@ -30,6 +30,11 @@ def get_feature_names(path=None):
     names.append("Cluster Label")
     return np.array(names)
 
+def get_cluster_names_pretty(path=None):
+    labels = get_cluster_labels_ints()
+    min_label, max_label = labels.min(), labels.max()
+    return ["Cluster "+ str(i) for i in range(min_label, max_label+1)]
+
 def get_short_feature_names(path=None):
     if path is None:
         path = './data/short_feature_names.txt'
@@ -39,19 +44,19 @@ def get_short_feature_names(path=None):
     names.append("Cluster")
     return np.array(names)
 
-def get_cluster_labels(path=None):
+def get_cluster_labels_ints(path=None):
     if path is None:
         path = './data/cluster_labels.txt'
     file = open(path, "r")
     names = file.readlines()
     names = [name.strip('\n') for name in names]
-    return np.array(names)
+    return np.array(names, dtype=int)
 
 def get_data_frame():
     raw_data = get_raw_cell_data()
     feature_names = get_feature_names()
     df = pd.DataFrame(raw_data, columns=feature_names[:-1]).set_index('Unique ID')
-    cluster_labels = get_cluster_labels()
+    cluster_labels = get_cluster_labels_ints()
     df['Cluster Label'] = cluster_labels
     # df = df[df['Maximum Curvature'] < 10]
     # df = df[df['Circularity'] < 4]

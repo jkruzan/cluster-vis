@@ -1,9 +1,9 @@
 import io, base64
 from dash import Dash, dcc, html, no_update, Input, Output
-import plotly.express as px
 
-from load_data import get_feature_names, get_image
-from charts import embed_scatter, parallel_coordinates, scatter_matrix, state_transition
+
+from load_data import get_feature_names, get_image, get_cluster_names_pretty
+from charts import embed_scatter, parallel_coordinates, scatter_matrix, correlation_matrix, state_transition
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
@@ -53,6 +53,14 @@ app.layout = html.Div([
         html.Center(dcc.Graph(id='state-transition', figure=state_transition())),
         dcc.Tooltip(id="state-transition-tooltip", direction='bottom'),
     ]),
+    # Correlation Matrix
+    html.H3("Correlation Matrix"),
+    html.Div(["Select Cluster:",
+            dcc.Dropdown(get_cluster_names_pretty(), 
+                            value=get_cluster_names_pretty()[0], 
+                            id='selected-cluster'),
+            ]),
+    html.Center(dcc.Graph(id='correlation-matrix')),
 ])
 
 
@@ -66,6 +74,12 @@ def update_plots(new_features):
     parallel_fig = parallel_coordinates(new_features)
     scatter_mat = scatter_matrix(new_features)
     return parallel_fig, scatter_mat
+
+@app.callback(
+    Output('correlation-matrix', 'figure'),
+    Input('selected-cluster', 'value'))
+def get_matrix(cluster):
+    return correlation_matrix(cluster)
 
 
 
@@ -122,7 +136,6 @@ def image_on_hover(hover_data):
     ]
 
     return True, bbox, children, direction
-
 
 if __name__ == '__main__':
     app.run_server(debug=True)
