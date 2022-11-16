@@ -72,6 +72,26 @@ def embed_scatter():
     fig.update_layout(autosize=False, margin=dict(t=10))
     return fig
 
+def embed_scatter_heatmap(feature):
+    '''
+    Scatter plot for with embedded dimensions and color showing cluster label
+    '''
+    # Get data (currently not sampling data)
+    df = get_embedded_clusters()
+    df[feature] = get_data_frame()[feature]
+
+
+    # Get figure
+    fig = px.scatter(df.sample(frac=0.1), x='Embed1', y='Embed2',
+                    color=feature)
+
+    fig.update_traces(
+        hoverinfo='none',
+        hovertemplate=None,
+    )
+    fig.update_layout(autosize=False, margin=dict(t=10))
+    return fig
+
 def make_arrows(edge_x, edge_y, probs, edgetups):
     edge_x = np.array(edge_x).reshape((-1, 2))
     edge_y = np.array(edge_y).reshape((-1, 2))
@@ -109,7 +129,6 @@ def make_arrows(edge_x, edge_y, probs, edgetups):
     #y=[oldy[i] for i in range(len(oldy)) if probs[(edgetups[i][1], edgetups[i][0])] > 0.005]
     line_trace = go.Scatter(mode="lines", x=x, y=y,line=dict(color="rgb(255,0,0)"))
     fig = go.Figure(data=[line_trace])
-    print(x1.shape, un.shape, y1.shape, vn.shape)
     x12 = [oldx1[i] for i in range(len(oldx1)) if probs[edgetups[i]] > 0.005]
     y12 = [oldy1[i] for i in range(len(oldy1)) if probs[edgetups[i]] > 0.005]
     arrows1 = ff.create_quiver(x12-un1*(0.25-0.0625*0.5), y12-vn1*(0.25-0.0625*0.5), un1, vn1,line=dict(color="#ff0000"), scale=0.25,hovertext=None, hoverinfo=None)
@@ -136,6 +155,7 @@ def make_arrows(edge_x, edge_y, probs, edgetups):
     fig.update_layout(annotations=annotations)
     fig.update_layout(showlegend=False)
     return fig, annotations
+    
 def state_transition():
     df = get_data_frame()
     clusters = list(set(df["Cluster Label"].values))
@@ -155,7 +175,6 @@ def state_transition():
     nclusters = len(clusters)
     G = nx.Graph()
     probs = {}
-    print(probs)
     for i in range(nclusters):
         G.add_node(int(clusters[i]))
     for i in range(nclusters):
@@ -242,13 +261,13 @@ def correlation_matrix(cluster):
     # Filter out desired cluster
     df = df[df['Cluster Label']==int(cluster[-1])]
     df.rename(columns={old: new for old, new in zip(df.columns, get_short_feature_names()[1:])}, inplace=True)
-    df.drop(labels='Cluster', axis=1, inplace=True)
+    df.drop(labels=['Cluster', 'Cell ID'], axis=1, inplace=True)
     corr_matrix = df.corr()
-    print("CORRERLKJAD SSHAPE: ", corr_matrix.shape)
+    corr_matrix = corr_matrix[corr_matrix.index[::-1]]
     fig = px.imshow(corr_matrix, 
                     color_continuous_scale='RdBu_r', 
                     origin='lower',
-                    width=700, height=700)
+                    width=800, height=800)
     fig.update_layout(autosize=True)
     return fig
 

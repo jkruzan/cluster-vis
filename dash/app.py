@@ -3,7 +3,7 @@ from dash import Dash, dcc, html, no_update, Input, Output
 
 
 from load_data import get_feature_names, get_image, get_cluster_names_pretty
-from charts import embed_scatter, parallel_coordinates, scatter_matrix, correlation_matrix, state_transition
+from charts import embed_scatter, embed_scatter_heatmap, parallel_coordinates, scatter_matrix, correlation_matrix, state_transition
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
@@ -34,17 +34,30 @@ app.layout = html.Div([
             dcc.Tooltip(id="scatter-matrix-tooltip", direction='bottom'),
         ]),
 
-    # Embedded features scatter plot
+    # Embedded features scatter plots
     html.Hr(),
     html.H3('Embedded Features'),
+
     html.Div(
-    className="container",
-    children=[
-        html.Center(dcc.Graph(id='embed-scatter', figure=embed_scatter())),
-        dcc.Tooltip(id="embed-scatter-tooltip", direction='bottom'),
-    ]),
+        className="container",
+        children=[
+            "Here is the provided embedding of the data. The color highlights the clustering of data in this space:",
+            html.Center(dcc.Graph(id='embed-scatter', figure=embed_scatter())),
+            dcc.Tooltip(id="embed-scatter-tooltip", direction='bottom'),
+            "Analyze how features are distributed across the embedding space by selecting a feature to visualize from the dropdown:",
+            html.Div(
+                children=[
+                    dcc.Dropdown(get_feature_names(),
+                        value='Experimental Condition',
+                        id='embed-selected-feature',
+                    ),
+                    dcc.Graph(id='embed-scatter-heatmap'),
+                    dcc.Tooltip(id="embed-scatter-tooltip-heatmap", direction='bottom'),],
+            )
+        ]   
+    ),
 
-
+    # # State Transition Diagram
     html.Hr(),
     html.H3('State Transition Matrix'),
     html.Div(
@@ -53,6 +66,7 @@ app.layout = html.Div([
         html.Center(dcc.Graph(id='state-transition', figure=state_transition())),
         dcc.Tooltip(id="state-transition-tooltip", direction='bottom'),
     ]),
+
     # Correlation Matrix
     html.H3("Correlation Matrix"),
     html.Div(["Select Cluster:",
@@ -74,6 +88,13 @@ def update_plots(new_features):
     parallel_fig = parallel_coordinates(new_features)
     scatter_mat = scatter_matrix(new_features)
     return parallel_fig, scatter_mat
+
+##  Callback to update features being shown in embed matrix
+@app.callback(
+    Output('embed-scatter-heatmap', 'figure'),
+    Input('embed-selected-feature', 'value'))
+def update_plots(feature):
+    return embed_scatter_heatmap(feature)
 
 @app.callback(
     Output('correlation-matrix', 'figure'),
