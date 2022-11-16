@@ -1,8 +1,9 @@
 import io, base64
 from dash import Dash, dcc, html, no_update, Input, Output
 
+
 from load_data import get_feature_names, get_image, get_cluster_names_pretty
-from charts import embed_scatter, parallel_coordinates, scatter_matrix, correlation_matrix
+from charts import embed_scatter, parallel_coordinates, scatter_matrix, correlation_matrix, state_transition
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
@@ -11,14 +12,14 @@ app = Dash(__name__, external_stylesheets=external_stylesheets)
 app.layout = html.Div([
     # Header
     html.H1("Cluster Vis"),
-    
+
     # Feature Selection
     html.H3("Features:"),
-    dcc.Dropdown(get_feature_names(), 
-                value=['Experimental Condition', 'Area', 'Cluster Label'], 
-                multi=True, 
+    dcc.Dropdown(get_feature_names(),
+                value=['Experimental Condition', 'Area', 'Cluster Label'],
+                multi=True,
                 id='selected-features'),
-    
+
     # Parallel Coordinates
     html.H3("Parallel Coordinates Plot"),
     dcc.Graph(id='parallel-coords'),
@@ -33,7 +34,7 @@ app.layout = html.Div([
             dcc.Tooltip(id="scatter-matrix-tooltip", direction='bottom'),
         ]),
 
-    # Embedded features scatter plot 
+    # Embedded features scatter plot
     html.Hr(),
     html.H3('Embedded Features'),
     html.Div(
@@ -43,6 +44,15 @@ app.layout = html.Div([
         dcc.Tooltip(id="embed-scatter-tooltip", direction='bottom'),
     ]),
 
+
+    html.Hr(),
+    html.H3('State Transition Matrix'),
+    html.Div(
+    className="container",
+    children=[
+        html.Center(dcc.Graph(id='state-transition', figure=state_transition())),
+        dcc.Tooltip(id="state-transition-tooltip", direction='bottom'),
+    ]),
     # Correlation Matrix
     html.H3("Correlation Matrix"),
     html.Div(["Select Cluster:",
@@ -129,7 +139,3 @@ def image_on_hover(hover_data):
 
 if __name__ == '__main__':
     app.run_server(debug=True)
-
-
-
-
