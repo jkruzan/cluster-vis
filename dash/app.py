@@ -68,7 +68,7 @@ app.layout = html.Div([
     ]),
 
     # Correlation Matrix
-    html.H3("Correlation Matrix"),
+    html.H3("Expression Matrix"),
     html.Div(["Select Cluster:",
             dcc.Dropdown(get_cluster_names_pretty(), 
                             value=get_cluster_names_pretty()[0], 

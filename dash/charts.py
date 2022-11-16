@@ -155,7 +155,7 @@ def make_arrows(edge_x, edge_y, probs, edgetups):
     fig.update_layout(annotations=annotations)
     fig.update_layout(showlegend=False)
     return fig, annotations
-    
+
 def state_transition():
     df = get_data_frame()
     clusters = list(set(df["Cluster Label"].values))
@@ -254,21 +254,34 @@ def state_transition():
     return fig
 def correlation_matrix(cluster):
     """
-    Correlation matrix fro
+    Correlation matrix
     """
+    ## TODO: Instead of using the given cluster, show all data
+    # and order by cluster somehow. Maybe reindex using the cluster label? 
+
     # Get data
     df = get_data_frame().astype(float)
     # Filter out desired cluster
-    df = df[df['Cluster Label']==int(cluster[-1])]
+    # df = df[df['Cluster Label']==int(cluster[-1])]
+    # Get short feature names
     df.rename(columns={old: new for old, new in zip(df.columns, get_short_feature_names()[1:])}, inplace=True)
-    df.drop(labels=['Cluster', 'Cell ID'], axis=1, inplace=True)
-    corr_matrix = df.corr()
-    corr_matrix = corr_matrix[corr_matrix.index[::-1]]
-    fig = px.imshow(corr_matrix, 
+    # Get rid of unneeded features
+    df.drop(labels=['Cluster', 'Cell ID', 'Exp Cond', 'Time'], axis=1, inplace=True)
+    # Map columns fom -2 to 2
+    df = df.apply(lambda x: 2*np.tanh(x))
+    # Sort in order of standard deviation
+    std = df.std().sort_values(ascending=False)
+    df = df.reindex(columns=std.index)
+
+    #Plot it
+    fig = px.imshow(df.transpose(),
+                    x = df.index,
+                    y = df.columns, 
                     color_continuous_scale='RdBu_r', 
                     origin='lower',
                     width=800, height=800)
     fig.update_layout(autosize=True)
+    fig.update_xaxes(showticklabels=False,visible=False)
     return fig
 
 
