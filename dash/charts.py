@@ -9,11 +9,17 @@ import plotly.graph_objects as go
 import plotly.figure_factory as ff
 
 
-def parallel_coordinates(features):
+def parallel_coordinates(features, df=None):
     # Get data and sample 1/1000 of it
-    df = get_data_frame().sample(frac=0.001)
+    if df is None:
+        df = get_data_frame()
+        colored_feat = 'Cluster Label'
+    else:
+        print("PARALLEL COORDINATES Using uploaded csv")
+        colored_feat = 'Cluster'
+    df = df.sample(frac=0.001)
+
     # Cast cluster labels to int (required for parallel coordinates color)
-    colored_feat = 'Cluster Label'
     df[colored_feat] = df[colored_feat].astype(int)
 
     # Get figure
@@ -22,17 +28,23 @@ def parallel_coordinates(features):
     fig.update_layout(paper_bgcolor='rgb(0,0,0,0)')
     return fig
 
-def scatter_matrix(features):
+def scatter_matrix(features, df=None):
     # Get data and sample 1/1000 of it
-    df = get_data_frame().sample(frac=0.001)
-
-    # Get shortened feature names for scatter plots
-    all_feature_names = get_feature_names()
-    short_feature_names = get_short_feature_names()
-    labels = {feature: short_feature_names[np.where(all_feature_names==feature)[0][0]] for feature in features}
+    if df is None:
+        df = get_data_frame()
+        # Get shortened feature names for scatter plots
+        all_feature_names = get_feature_names()
+        short_feature_names = get_short_feature_names()
+        labels = {feature: short_feature_names[np.where(all_feature_names==feature)[0][0]] for feature in features}
+        color = 'Cluster Label'
+    else:
+        print("SCATTER MATRIX Using uploaded csv")
+        labels = df.columns
+        color = 'Cluster Label'
+    df = df.sample(frac=0.001)
 
     # Get figure
-    fig = px.scatter_matrix(df, color='Cluster Label',
+    fig = px.scatter_matrix(df, color=color,
                             dimensions=features,
                             labels=labels,
                             hover_data={df.index.name: df.index},

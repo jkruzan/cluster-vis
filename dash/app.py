@@ -1,6 +1,6 @@
 import io, base64
-from dash import Dash, dcc, html, no_update, Input, Output
-
+from dash import Dash, dcc, html, no_update, Input, Output, State
+import pandas as pd
 from views import exploratory_view, cluster_analysis_view
 from load_data import get_feature_names, get_image, get_cluster_names_pretty
 from charts import embed_scatter, embed_scatter_heatmap, parallel_coordinates, scatter_matrix, correlation_matrix, state_transition
@@ -12,32 +12,72 @@ app = Dash(__name__, external_stylesheets=external_stylesheets, suppress_callbac
 app.layout = html.Div([
     # Header
     html.H1("Cluster Vis"),
+    "Upload Data:",
+    dcc.Upload(
+        id='upload-data',
+        children=html.Div([
+            'Drag and Drop or ',
+            html.A('Select Files')
+        ]),
+        style={
+            'width': '100%',
+            'height': '60px',
+            'lineHeight': '60px',
+            'borderWidth': '1px',
+            'borderStyle': 'dashed',
+            'borderRadius': '5px',
+            'textAlign': 'center',
+            'margin': '10px'
+        },
+        # Allow multiple files to be uploaded
+        multiple=False
+    ),
+    html.Div(id='output-data'),
     "Select a view:",
     dcc.RadioItems(['Exploratory', 'Cluster Analysis'], 'Exploratory', id='view-selector'),
     html.Div(id='view'),
 ])
 
+def csv_to_df(contents, filename):
+## Callback to process file updload
+    _, content_string = contents.split(',')
+    decoded = base64.b64decode(content_string)
+    try:
+        if 'csv' in filename:
+            df = pd.read_csv(io.StringIO(decoded.decode('utf-8')))
+            df = df.set_index('Unique ID')
+    except Exception as e:
+        print(e)
+        return "Error getting dataframe from csv"
+    return df
+
+@app.callback(
+    Output('view', 'children'),
+    Input('view-selector', 'value'))
+def parse_update(view):
+    if view == 'Exploratory':
+        v = exploratory_view()
+    else:
+        v = cluster_analysis_view()
+    return v
 
 ##  Callback to update features being shown in scatter matrix and
 ##  parallel coordinate plots
 @app.callback(
     Output('parallel-coords', 'figure'),
     Output('scatter-matrix', 'figure'),
-    Input('selected-features', 'value'))
-def update_plots(new_features):
-    parallel_fig = parallel_coordinates(new_features)
-    scatter_mat = scatter_matrix(new_features)
-    return parallel_fig, scatter_mat
-
-@app.callback(
-Output('view', 'children'),
-Input('view-selector', 'value'))
-def get_view(view):
-    if view == 'Exploratory':
-        v = exploratory_view()
+    Input('selected-features', 'value'),
+    Input('upload-data', 'contents'),
+    State('upload-data', 'filename'))
+def update_plots(new_features, contents, filename):
+    if contents is not None:
+        df = csv_to_df(contents, filename)
+        parallel_fig = parallel_coordinates(new_features, df)
+        scatter_mat = scatter_matrix(new_features, df)
     else:
-        v = cluster_analysis_view()
-    return v
+        parallel_fig = parallel_coordinates(new_features)
+        scatter_mat = scatter_matrix(new_features)
+    return parallel_fig, scatter_mat
 
 ##  Callback to update features being shown in embed matrix
 @app.callback(
@@ -52,8 +92,7 @@ def update_plots(feature):
 def get_matrix(cluster):
     return correlation_matrix(cluster)
 
-
-
+# Callback to show images on hover
 @app.callback(
     Output('embed-scatter-tooltip', "show"),
     Output('embed-scatter-tooltip', "bbox"),
@@ -61,9 +100,11 @@ def get_matrix(cluster):
     Output('embed-scatter-tooltip', "direction"),
     Input('embed-scatter', 'hoverData')
 )
-def scatter_image_on_hover(hover_data):
+def scatter_embed_image_on_hover(hover_data):
     return image_on_hover(hover_data)
 
+
+# Callback to show images on hover
 @app.callback(
     Output('scatter-matrix-tooltip', "show"),
     Output('scatter-matrix-tooltip', "bbox"),
@@ -75,7 +116,7 @@ def scatter_image_on_hover(hover_data):
     return image_on_hover(hover_data)
 
 
-## Callback to show images on hover
+## Function to show images on hover
 def image_on_hover(hover_data):
     if hover_data is None:
         return False, no_update, no_update, no_update

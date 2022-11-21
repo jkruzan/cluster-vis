@@ -9,7 +9,7 @@ def exploratory_view():
     children = [
         html.H3("Features:"),
         dcc.Dropdown(get_feature_names(),
-                value=['Experimental Condition', 'Area', 'Cluster Label'],
+                value=['Area', 'Cluster Label'],
                 multi=True,
                 id='selected-features'),
 
