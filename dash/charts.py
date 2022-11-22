@@ -31,14 +31,11 @@ def scatter_matrix(features, df):
     fig.update_layout(legend=dict(bgcolor='white'), paper_bgcolor='rgb(0,0,0,0)')
     return fig
 
-def embed_scatter(df=None):
+def embed_scatter(df):
     '''
     Scatter plot for with embedded dimensions and color showing cluster label
     '''
-    # Get data (currently not sampling data)
-    if df is None:
-        print("LOADING DF IN EMBED SCATTER")
-        df = get_csv_df()
+    # (currently not sampling data)
     ##  Manually order the clusters for the legend
     # Find max and min of cluster labels
     cluster_min = df['Cluster'].min()
@@ -62,15 +59,11 @@ def embed_scatter(df=None):
     fig.update_layout(autosize=False, margin=dict(t=10))
     return fig
 
-def embed_scatter_heatmap(feature, df=None):
+def embed_scatter_heatmap(feature, df):
     '''
     Scatter plot for with embedded dimensions and color showing cluster label
     '''
-    # Get data (currently not sampling data)
-    if df is None:
-        print("LOADING FOR EMBED SCATTER HEATMAP")
-        df = get_csv_df().sample(10000)
-
+    # (currently not sampling data)
     # Get figure
     fig = px.scatter(df, x='Embed1', y='Embed2',
                     color=feature)
@@ -243,17 +236,13 @@ def state_transition(df=None):
     fig.update_layout(width=800, height=800)
     fig.update_layout(annotations=annotations)
     return fig
-def correlation_matrix(cluster, df=None):
+def correlation_matrix(df):
     """
     Correlation matrix
     """
     ## TODO: Instead of using the given cluster, show all data
     # and order by cluster somehow. Maybe reindex using the cluster label? 
 
-    # Get data
-    if df is None:
-        print("LOADING CSV FOR CORRELATION MATRIX")
-        df = get_csv_df()
     # Get rid of unneeded features
     df = df.copy()
     df.drop(labels=['Cluster', 'Cell ID', 'Exp Cond', 'Time'], axis=1, inplace=True)

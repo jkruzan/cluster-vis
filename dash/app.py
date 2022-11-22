@@ -91,7 +91,7 @@ def update_plots(feature):
     Input('selected-cluster', 'value'))
 def get_matrix(cluster):
     df = DEFAULT_DF
-    return correlation_matrix(cluster, df)
+    return correlation_matrix(df)
 
 # Callback to show images on hover of embedding
 @app.callback(
