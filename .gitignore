@@ -1,6 +1,6 @@
 __pycache__/
 *.pyc
 
-dash/data/data_normalized.mat
-dash/data/BinaryImages.mat
-dash/data/binary_images/
+dash/data/
+
+.DS_Store
