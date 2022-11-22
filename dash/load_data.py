@@ -1,37 +1,23 @@
 import numpy as np
 import pandas as pd
-from scipy.io import loadmat
 from PIL import Image
-
-def get_embedded_clusters(path=None):
-    if path is None:
-        path = './data/labels_and_embedding.txt'
-    df = pd.read_csv(path, sep=',', header=None, names=['Unique ID', 'Cluster Label', 'Embed1', 'Embed2']).set_index('Unique ID')
-    return df
 
 def get_image(unique_id):
     path = '../../binary_images/binary_image_' + str(unique_id) + '.bmp'
     return Image.open(path)
 
-def get_raw_cell_data(path=None):
-    if path is None:
-        path = './data/data_normalized.mat'
-    raw_data = loadmat(path)
-    raw_data = raw_data['DataFileNorm']
-    return(raw_data)
+def get_feature_names(path=None, df=None):
+    if df is None:
+        print("LOADING CSV FOR FEATURE NAMES")
+        df = get_csv_df(path)
+    return list(df.columns)
 
-def get_feature_names(path=None):
-    if path is None:
-        path = './data/feature_names.txt'
-    file = open(path, "r")
-    names = file.readlines()
-    names = [name.strip('\n') for name in names]
-    # Include additional cluster label
-    names.append("Cluster Label")
-    return np.array(names)
-
-def get_cluster_names_pretty(path=None):
-    labels = get_cluster_labels_ints()
+def get_cluster_names_pretty(path=None, df=None):
+    if df is None:
+        print("LOADING CSV TO GET CLUSTER NAMES")
+        labels = get_csv_df()['Cluster'].values
+    else:
+        labels = df['Cluster'].values
     min_label, max_label = labels.min(), labels.max()
     return ["Cluster "+ str(i) for i in range(min_label, max_label+1)]
 
@@ -44,21 +30,14 @@ def get_short_feature_names(path=None):
     names.append("Cluster")
     return np.array(names)
 
-def get_cluster_labels_ints(path=None):
+def get_csv_df(path=None):
+    print("LOAD THE BIG CSV")
     if path is None:
-        path = './data/cluster_labels.txt'
-    file = open(path, "r")
-    names = file.readlines()
-    names = [name.strip('\n') for name in names]
-    return np.array(names, dtype=int)
-
-def get_data_frame():
-    raw_data = get_raw_cell_data()
-    feature_names = get_feature_names()
-    df = pd.DataFrame(raw_data, columns=feature_names[:-1]).set_index('Unique ID')
-    cluster_labels = get_cluster_labels_ints()
-    df['Cluster Label'] = cluster_labels
-    # df = df[df['Maximum Curvature'] < 10]
-    # df = df[df['Circularity'] < 4]
-    # df = df[df['Circular Diameter'] < 1]
+        path = './data/data.csv'
+    df = pd.read_csv(path)
+    df.dropna(inplace=True)
+    df['Unique ID'] = df['Unique ID'].astype('int32')
+    df['Cluster'] = df['Cluster'].astype('int32')
+    df.set_index('Unique ID', inplace=True)
+    # LOOK INTO NAN
     return df

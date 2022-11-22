@@ -2,12 +2,14 @@ import io, base64
 from dash import Dash, dcc, html, no_update, Input, Output, State
 import pandas as pd
 from views import exploratory_view, cluster_analysis_view
-from load_data import get_feature_names, get_image, get_cluster_names_pretty
-from charts import embed_scatter, embed_scatter_heatmap, parallel_coordinates, scatter_matrix, correlation_matrix, state_transition
+from load_data import get_image, get_csv_df
+from charts import embed_scatter_heatmap, parallel_coordinates, scatter_matrix, correlation_matrix
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
 app = Dash(__name__, external_stylesheets=external_stylesheets, suppress_callback_exceptions=True)
+print("RENDERING APP, Loading DF")
+DEFAULT_DF = get_csv_df()
 
 app.layout = html.Div([
     # Header
@@ -55,14 +57,14 @@ def csv_to_df(contents, filename):
     Output('view', 'children'),
     Input('view-selector', 'value'))
 def parse_update(view):
+    df = DEFAULT_DF
     if view == 'Exploratory':
-        v = exploratory_view()
+        v = exploratory_view(df)
     else:
-        v = cluster_analysis_view()
+        v = cluster_analysis_view(df)
     return v
 
-##  Callback to update features being shown in scatter matrix and
-##  parallel coordinate plots
+##  Callback to update exploratory view plots
 @app.callback(
     Output('parallel-coords', 'figure'),
     Output('scatter-matrix', 'figure'),
@@ -70,13 +72,10 @@ def parse_update(view):
     Input('upload-data', 'contents'),
     State('upload-data', 'filename'))
 def update_plots(new_features, contents, filename):
-    if contents is not None:
-        df = csv_to_df(contents, filename)
-        parallel_fig = parallel_coordinates(new_features, df)
-        scatter_mat = scatter_matrix(new_features, df)
-    else:
-        parallel_fig = parallel_coordinates(new_features)
-        scatter_mat = scatter_matrix(new_features)
+    print("UPDATE THE EXPLORATORY VIEW CALL")
+    df = DEFAULT_DF if contents is None else csv_to_df(contents, filename)
+    parallel_fig = parallel_coordinates(new_features, df.sample(250))
+    scatter_mat = scatter_matrix(new_features, df.sample(250))
     return parallel_fig, scatter_mat
 
 ##  Callback to update features being shown in embed matrix
@@ -84,15 +83,17 @@ def update_plots(new_features, contents, filename):
     Output('embed-scatter-heatmap', 'figure'),
     Input('embed-selected-feature', 'value'))
 def update_plots(feature):
-    return embed_scatter_heatmap(feature)
+    df = DEFAULT_DF.sample(10000)
+    return embed_scatter_heatmap(feature, df)
 
 @app.callback(
     Output('correlation-matrix', 'figure'),
     Input('selected-cluster', 'value'))
 def get_matrix(cluster):
-    return correlation_matrix(cluster)
+    df = DEFAULT_DF
+    return correlation_matrix(cluster, df)
 
-# Callback to show images on hover
+# Callback to show images on hover of embedding
 @app.callback(
     Output('embed-scatter-tooltip', "show"),
     Output('embed-scatter-tooltip', "bbox"),
@@ -104,7 +105,7 @@ def scatter_embed_image_on_hover(hover_data):
     return image_on_hover(hover_data)
 
 
-# Callback to show images on hover
+# Callback to show images on hover of scatter matrix
 @app.callback(
     Output('scatter-matrix-tooltip', "show"),
     Output('scatter-matrix-tooltip', "bbox"),

@@ -1,25 +1,14 @@
-from plotly.offline import plot
-from load_data import get_data_frame, get_feature_names, get_short_feature_names, get_embedded_clusters
+from load_data import get_csv_df
 import plotly.express as px
 import numpy as np
 import networkx as nx
-import pandas as pd
-from random import randint
 import plotly.graph_objects as go
 import plotly.figure_factory as ff
 
 
-def parallel_coordinates(features, df=None):
-    # Get data and sample 1/1000 of it
-    if df is None:
-        df = get_data_frame()
-        colored_feat = 'Cluster Label'
-    else:
-        print("PARALLEL COORDINATES Using uploaded csv")
-        colored_feat = 'Cluster'
-    df = df.sample(frac=0.001)
-
+def parallel_coordinates(features, df):
     # Cast cluster labels to int (required for parallel coordinates color)
+    colored_feat = 'Cluster'
     df[colored_feat] = df[colored_feat].astype(int)
 
     # Get figure
@@ -28,25 +17,12 @@ def parallel_coordinates(features, df=None):
     fig.update_layout(paper_bgcolor='rgb(0,0,0,0)')
     return fig
 
-def scatter_matrix(features, df=None):
-    # Get data and sample 1/1000 of it
-    if df is None:
-        df = get_data_frame()
-        # Get shortened feature names for scatter plots
-        all_feature_names = get_feature_names()
-        short_feature_names = get_short_feature_names()
-        labels = {feature: short_feature_names[np.where(all_feature_names==feature)[0][0]] for feature in features}
-        color = 'Cluster Label'
-    else:
-        print("SCATTER MATRIX Using uploaded csv")
-        labels = df.columns
-        color = 'Cluster Label'
-    df = df.sample(frac=0.001)
-
+def scatter_matrix(features, df):
     # Get figure
+    color = 'Cluster'
+    # Get cluster oder changes df so make copy
     fig = px.scatter_matrix(df, color=color,
                             dimensions=features,
-                            labels=labels,
                             hover_data={df.index.name: df.index},
                             category_orders=get_cluster_order(df)
                             )
@@ -55,24 +31,26 @@ def scatter_matrix(features, df=None):
     fig.update_layout(legend=dict(bgcolor='white'), paper_bgcolor='rgb(0,0,0,0)')
     return fig
 
-def embed_scatter():
+def embed_scatter(df=None):
     '''
     Scatter plot for with embedded dimensions and color showing cluster label
     '''
     # Get data (currently not sampling data)
-    df = get_embedded_clusters()
-
+    if df is None:
+        print("LOADING DF IN EMBED SCATTER")
+        df = get_csv_df()
     ##  Manually order the clusters for the legend
     # Find max and min of cluster labels
-    cluster_min = df['Cluster Label'].min()
-    cluster_max = df['Cluster Label'].max()
+    cluster_min = df['Cluster'].min()
+    cluster_max = df['Cluster'].max()
     # Convert integer labels to strings (required for discrete colors)
-    df['Cluster Label'] = 'Cluster ' + df['Cluster Label'].astype(str)
-    cluster_order = {'Cluster Label':["Cluster "+ str(i) for i in range(cluster_min, cluster_max+1)]}
+    df = df.copy()
+    df['Cluster'] = 'Cluster ' + df['Cluster'].astype(str)
+    cluster_order = {'Cluster':["Cluster "+ str(i) for i in range(cluster_min, cluster_max+1)]}
 
     # Get figure
     fig = px.scatter(df, x='Embed1', y='Embed2',
-                    color='Cluster Label',
+                    color='Cluster',
                     hover_data={df.index.name: df.index},
                     category_orders=cluster_order
                     )
@@ -84,17 +62,17 @@ def embed_scatter():
     fig.update_layout(autosize=False, margin=dict(t=10))
     return fig
 
-def embed_scatter_heatmap(feature):
+def embed_scatter_heatmap(feature, df=None):
     '''
     Scatter plot for with embedded dimensions and color showing cluster label
     '''
     # Get data (currently not sampling data)
-    df = get_embedded_clusters()
-    df[feature] = get_data_frame()[feature]
-
+    if df is None:
+        print("LOADING FOR EMBED SCATTER HEATMAP")
+        df = get_csv_df().sample(10000)
 
     # Get figure
-    fig = px.scatter(df.sample(frac=0.1), x='Embed1', y='Embed2',
+    fig = px.scatter(df, x='Embed1', y='Embed2',
                     color=feature)
 
     fig.update_traces(
@@ -168,22 +146,23 @@ def make_arrows(edge_x, edge_y, probs, edgetups):
     fig.update_layout(showlegend=False)
     return fig, annotations
 
-def state_transition():
-    df = get_data_frame()
-    clusters = list(set(df["Cluster Label"].values))
+def state_transition(df=None):
+    print("LOADING DF FOR STATE TRANSITION")
+    df = get_csv_df()
+    clusters = list(set(df["Cluster"].values))
     clusters.sort()
     iddict = {}
     changes = {}
     for i in range(df.shape[0]):
         row = df.iloc[i]
         if row["Cell ID"] not in iddict:
-            iddict[row["Cell ID"]] = row["Cluster Label"]
+            iddict[row["Cell ID"]] = row["Cluster"]
         else:
             if iddict[row["Cell ID"]] not in changes:
-                changes[iddict[row["Cell ID"]]] = [row["Cluster Label"]]
+                changes[iddict[row["Cell ID"]]] = [row["Cluster"]]
             else:
-                changes[iddict[row["Cell ID"]]].append(row["Cluster Label"])
-            iddict[row["Cell ID"]] = row["Cluster Label"]
+                changes[iddict[row["Cell ID"]]].append(row["Cluster"])
+            iddict[row["Cell ID"]] = row["Cluster"]
     nclusters = len(clusters)
     G = nx.Graph()
     probs = {}
@@ -264,7 +243,7 @@ def state_transition():
     fig.update_layout(width=800, height=800)
     fig.update_layout(annotations=annotations)
     return fig
-def correlation_matrix(cluster):
+def correlation_matrix(cluster, df=None):
     """
     Correlation matrix
     """
@@ -272,12 +251,11 @@ def correlation_matrix(cluster):
     # and order by cluster somehow. Maybe reindex using the cluster label? 
 
     # Get data
-    df = get_data_frame().astype(float)
-    # Filter out desired cluster
-    # df = df[df['Cluster Label']==int(cluster[-1])]
-    # Get short feature names
-    df.rename(columns={old: new for old, new in zip(df.columns, get_short_feature_names()[1:])}, inplace=True)
+    if df is None:
+        print("LOADING CSV FOR CORRELATION MATRIX")
+        df = get_csv_df()
     # Get rid of unneeded features
+    df = df.copy()
     df.drop(labels=['Cluster', 'Cell ID', 'Exp Cond', 'Time'], axis=1, inplace=True)
     # Map columns fom -2 to 2
     df = df.apply(lambda x: 2*np.tanh(x))
@@ -304,8 +282,9 @@ def get_cluster_order(df):
     """
     ##  Manually order the clusters for the legend
     # Find max and min of cluster labels
-    cluster_min = df['Cluster Label'].astype(int).min()
-    cluster_max = df['Cluster Label'].astype(int).max()
+    df = df.copy()
+    cluster_min = df['Cluster'].astype(int).min()
+    cluster_max = df['Cluster'].astype(int).max()
     # Convert integer labels to strings (required for discrete colors)
-    df['Cluster Label'] = 'Cluster ' + df['Cluster Label'].astype(str)
-    return {'Cluster Label':[f'Cluster {i}' for i in range(cluster_min, cluster_max+1)]}
+    df['Cluster'] = 'Cluster ' + df['Cluster'].astype(str)
+    return {'Cluster':[f'Cluster {i}' for i in range(cluster_min, cluster_max+1)]}
