@@ -9,8 +9,8 @@ Dependencies
 
 
 ### Data Files
-You will need to download `BinaryImages.mat` and `data_normalized.mat` from Google Drive and place them
-in the data directory.
+You will need to download `BinaryImages.mat` and `data.csv` from Google Drive and place them
+in the data directory. Get them [here](https://drive.google.com/drive/folders/13A9ydQI78UG-qGWPY-NFFqzI_JUL4Hkc).
 
 ### Virtual Environment
 Create a virtual environment for this project with `conda env create -f env.yml`.
