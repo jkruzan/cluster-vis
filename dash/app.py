@@ -37,6 +37,11 @@ app.layout = html.Div([
     html.Div(id='output-data'),
     "Select a view:",
     dcc.RadioItems(['Exploratory', 'Cluster Analysis'], 'Exploratory', id='view-selector'),
+    dcc.Loading(
+            id="loading-1",
+            type="default",
+            children=html.Div(id="loading-output-1")
+        ),
     html.Div(id='view'),
 ])
 
@@ -55,6 +60,7 @@ def csv_to_df(contents, filename):
 
 @app.callback(
     Output('view', 'children'),
+    Output('loading-output-1', 'children'),
     Input('view-selector', 'value'))
 def parse_update(view):
     df = DEFAULT_DF
@@ -62,7 +68,7 @@ def parse_update(view):
         v = exploratory_view(df)
     else:
         v = cluster_analysis_view(df)
-    return v
+    return v, None
 
 ##  Callback to update exploratory view plots
 @app.callback(
