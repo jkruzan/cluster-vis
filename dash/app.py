@@ -260,6 +260,9 @@ def csv_to_df(contents, filename):
     try:
         if 'csv' in filename:
             df = pd.read_csv(io.StringIO(decoded.decode('utf-8')))
+            df.dropna(inplace=True)
+            df['Unique ID'] = df['Unique ID'].astype('int32')
+            df['Cluster'] = df['Cluster'].astype('int32')
             df = df.set_index('Unique ID')
     except Exception as e:
         print(e)
