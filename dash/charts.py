@@ -20,11 +20,16 @@ def parallel_coordinates(features, df):
 def scatter_matrix(features, df):
     # Get figure
     color = 'Cluster'
+    df = df.copy()
+    cluster_min = df['Cluster'].min()
+    cluster_max = df['Cluster'].max()
+    df['Cluster'] = 'Cluster ' + df['Cluster'].astype(str)
+    cluster_order = {'Cluster':["Cluster "+ str(i) for i in range(cluster_min, cluster_max+1)]}
     # Get cluster oder changes df so make copy
     fig = px.scatter_matrix(df, color=color,
                             dimensions=features,
                             hover_data={df.index.name: df.index},
-                            category_orders=get_cluster_order(df)
+                            category_orders=cluster_order
                             )
     # Update traces (required for showing image on hover)
     fig.update_traces(hoverinfo='none',hovertemplate=None,)
@@ -73,6 +78,7 @@ def embed_scatter_heatmap(feature, df):
         hovertemplate=None,
     )
     fig.update_layout(autosize=False, margin=dict(t=10))
+    fig.update_layout(width=700, height=500)
     return fig
 
 def make_arrows(edge_x, edge_y, probs, edgetups):
