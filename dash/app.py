@@ -15,7 +15,13 @@ DEFAULT_DF = get_csv_df()
 app.layout = html.Div([
     # Header
     html.H1("Cluster Vis"),
-    html.B("Upload Data:"),
+    html.B("Upload Data (BETA):"),
+    html.Br(),
+    "If analyzing different features, embeddings, or clustering results, upload a new CSV below.",
+    html.Br(),
+    "Be sure to include columns with at least the following labels:",
+    html.Br(),
+    "'Unique ID', 'Cluster'",
     dcc.Upload(
         id='upload-data',
         children=html.Div([
