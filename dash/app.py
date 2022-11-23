@@ -1,5 +1,6 @@
 import io, base64
-from dash import Dash, dcc, html, no_update, Input, Output
+from dash import Dash, dcc, html, no_update
+from dash.dependencies import Input, Output, State
 import pandas as pd
 from load_data import get_feature_names
 from load_data import get_image, get_csv_df
@@ -14,7 +15,7 @@ DEFAULT_DF = get_csv_df()
 app.layout = html.Div([
     # Header
     html.H1("Cluster Vis"),
-    "Upload Data:",
+    html.B("Upload Data:"),
     dcc.Upload(
         id='upload-data',
         children=html.Div([
@@ -34,9 +35,9 @@ app.layout = html.Div([
         # Allow multiple files to be uploaded
         multiple=False
     ),
-    "Graphs helpful for analyzing your dataset:",
+    html.B("Graphs helpful for analyzing your dataset:"),
     dcc.Checklist(["Parallel Coordinates", "Scatter Matrix"], ['Parallel Coordinates'], inline=True, id='exploratory-graphs'),
-    "Graphs helpful for clustering analysis:",
+    html.B("Graphs helpful for clustering analysis:"),
     dcc.Checklist(['Embedded Clustering', 'Embedded Clustering Heatmap', 'Feature Expression Matrix', 'State Transition Diagram'],
                     ['Embedded Clustering', 'Embedded Clustering Heatmap'],
                     inline=True,
@@ -44,36 +45,29 @@ app.layout = html.Div([
     html.Div(id='exploratory-feature-selection'),
     html.Div(id='parallel-coords-div'),
     html.Div(id='scatter-matrix-div'),
+    html.Div(id='embed-div'),
     html.Div(id='embed-cluster-div'),
     html.Div(id='embed-feature-div',style={'width': '50%'}),
     html.Div(id='feature-expression-div'),
     html.Div(id='state-transition-div')
 ])
 
-def csv_to_df(contents, filename):
-## Callback to process file updload
-    _, content_string = contents.split(',')
-    decoded = base64.b64decode(content_string)
-    try:
-        if 'csv' in filename:
-            df = pd.read_csv(io.StringIO(decoded.decode('utf-8')))
-            df = df.set_index('Unique ID')
-    except Exception as e:
-        print(e)
-        return "Error getting dataframe from csv"
-    return df
-
 ############################## PARALLEL/SCATTER FEATURE SELECTION ############################## 
 @app.callback(
     Output('exploratory-feature-selection', 'children'),
-    Input('exploratory-graphs', 'value')
+    Input('exploratory-graphs', 'value'),
+    Input('upload-data', 'contents'),
+    State('upload-data', 'filename')
 )
-def exploratory_view(graphs):
+def exploratory_view(graphs, contents, filename):
     children = []
+    df = DEFAULT_DF.copy() if contents is None else csv_to_df(contents, filename)
+    feature_names = get_feature_names(df)
     if 'Parallel Coordinates' in graphs or 'Scatter Matrix' in graphs:
         children.append(html.H3("Feature Selection:"))
-        children.append(dcc.Dropdown(get_feature_names(df=DEFAULT_DF),
-                value=['Area', 'Cluster'],
+        children.append("Select features to visualize in the Parallel Coordinates and/or Scatter Matrix Graphs")
+        children.append(dcc.Dropdown(feature_names,
+                value=[feature_names[0], feature_names[-1]],
                 multi=True,
                 id='selected-features')
         )
@@ -94,10 +88,13 @@ def show_parallel_coords(graphs):
 @app.callback(
     Output('parallel-coords', 'figure'),
     Input('selected-features', 'value'),
+    Input('upload-data', 'contents'),
+    State('upload-data', 'filename')
 )
-def update_parallel_coords(features):
-    df = DEFAULT_DF #if contents is None else csv_to_df(contents, filename)
-    parallel_fig = parallel_coordinates(features, df.sample(250))
+def update_parallel_coords(features, contents, filename):
+    df = DEFAULT_DF.copy() if contents is None else csv_to_df(contents, filename)
+    df = df.sample(250)
+    parallel_fig = parallel_coordinates(features, df)
     return parallel_fig
 
 ############################## SCATTER MATRIX ##############################
@@ -117,9 +114,11 @@ def show_scatter_matrix(graphs):
 @app.callback(
     Output('scatter-matrix', 'figure'),
     Input('selected-features', 'value'),
+    Input('upload-data', 'contents'),
+    State('upload-data', 'filename')
 )
-def update_scatter_matrix(features):
-    df = DEFAULT_DF.copy() #if contents is None else csv_to_df(contents, filename)
+def update_scatter_matrix(features, contents, filename):
+    df = DEFAULT_DF.copy() if contents is None else csv_to_df(contents, filename)
     scatter_fig = scatter_matrix(features, df.sample(250))
     return scatter_fig
 
@@ -134,20 +133,42 @@ def update_scatter_matrix(features):
 def scatter_image_on_hover(hover_data):
     return image_on_hover(hover_data)
 
+############################## EMBED DIV ##############################
+@app.callback(
+    Output('embed-div', 'children'),
+    Input('analysis-graphs', 'value'),
+    Input('upload-data', 'contents'),
+    State('upload-data', 'filename')
+)
+def show_embed_div(graphs, contents, filename):
+    children =[]
+    if 'Embedded Clustering' in graphs or 'Embedded Clustering Heatmap' in graphs:
+        df = DEFAULT_DF.copy() if contents is None else csv_to_df(contents, filename)
+        if 'Embed1' in df.columns and 'Embed2' in df.columns:
+            if 'Embed3' in df.columns:
+                children.append(html.H3("3D Embedding"))
+            else:
+                children.append(html.H3("2D Embedding"))
+        else:
+            children.append(html.H3("Embedding Graphs:"))
+            children.append("Embedding graphs require columns labeled 'Embed1', 'Embed2', and optionally 'Embed3' to appear in the uploaded CSV.")
+    return children
 ############################## EMBEDDED CLUSTERS ##############################
 ##  Callback to update exploratory view plots
 @app.callback(
     Output('embed-cluster-div', 'children'),
     Input('analysis-graphs', 'value'),
+    Input('upload-data', 'contents'),
+    State('upload-data', 'filename')
 )
-def show_embed_clusters(graphs):
+def show_embed_clusters(graphs, contents, filename):
     children =[]
     if 'Embedded Clustering' in graphs:
-        df = DEFAULT_DF.copy()
-        figure= embed_scatter(df)
-        children.append(html.H3("Embedded Clustering:"))
-        children.append(dcc.Graph(id='embed-clusters', figure=figure))
-        children.append(dcc.Tooltip(id="embed-clusters-tooltip", direction='bottom'))
+        df = DEFAULT_DF.copy() if contents is None else csv_to_df(contents, filename)
+        if 'Embed1' in df.columns and 'Embed2' in df.columns:
+            figure= embed_scatter(df)
+            children.append(dcc.Graph(id='embed-clusters', figure=figure))
+            children.append(dcc.Tooltip(id="embed-clusters-tooltip", direction='bottom'))
     return children
 
 # Callback to show images on hover of scatter matrix
@@ -166,25 +187,31 @@ def scatter_image_on_hover(hover_data):
 @app.callback(
     Output('embed-feature-div', 'children'),
     Input('analysis-graphs', 'value'),
+    Input('upload-data', 'contents'),
+    State('upload-data', 'filename')
 )
-def show_embed_feature(graphs):
+def show_embed_feature(graphs, contents, filename):
     children =[]
     if 'Embedded Clustering Heatmap' in graphs:
-        df = DEFAULT_DF.copy()
-        children.append("Select a feature to visualize in the embedding space:")
-        children.append(dcc.Dropdown(get_feature_names(df=df),
-                            value='Cluster',
-                            id='embed-feature-selection'
-                        ))
-        children.append(dcc.Graph(id='embed-feature'))
+        df = DEFAULT_DF.copy() if contents is None else csv_to_df(contents, filename)
+        if 'Embed1' in df.columns and 'Embed2' in df.columns:
+            children.append("Select a feature to visualize in the embedding space:")
+            children.append(dcc.Dropdown(df.columns,
+                                value='Cluster',
+                                id='embed-feature-selection'
+                            ))
+            children.append(dcc.Graph(id='embed-feature'))
     return children
 
 @app.callback(
     Output('embed-feature', 'figure'),
     Input('embed-feature-selection', 'value'),
+    Input('upload-data', 'contents'),
+    State('upload-data', 'filename')
 )
-def update_embed_feature(feature):
-    df = DEFAULT_DF.copy().sample(10000)
+def update_embed_feature(feature, contents, filename):
+    df = DEFAULT_DF.copy() if contents is None else csv_to_df(contents, filename)
+    df = df.sample(10000)
     return embed_scatter_heatmap(feature, df)
 
 ############################## Feature Expression Matrix ##############################
@@ -192,11 +219,13 @@ def update_embed_feature(feature):
 @app.callback(
     Output('feature-expression-div', 'children'),
     Input('analysis-graphs', 'value'),
+    Input('upload-data', 'contents'),
+    State('upload-data', 'filename')
 )
-def show_expression_matrix(graphs):
+def show_expression_matrix(graphs, contents, filename):
     children =[]
     if 'Feature Expression Matrix' in graphs:
-        df = DEFAULT_DF.copy()
+        df = DEFAULT_DF.copy() if contents is None else csv_to_df(contents, filename)
         children.append(html.H3("Expression Matrix"))
         children.append(html.Center(dcc.Graph(id='expression-matrix', figure=correlation_matrix(df))))
     return children
@@ -206,14 +235,30 @@ def show_expression_matrix(graphs):
 @app.callback(
     Output('state-transition-div', 'children'),
     Input('analysis-graphs', 'value'),
+    Input('upload-data', 'contents'),
+    State('upload-data', 'filename')
 )
-def show_state_transition(graphs):
+def show_state_transition(graphs, contents, filename):
     children =[]
     if 'State Transition Diagram' in graphs:
-        df = DEFAULT_DF.copy()
+        df = DEFAULT_DF.copy() if contents is None else csv_to_df(contents, filename)
         children.append(html.H3("State Transition Diagram"))
         children.append(html.Center(dcc.Graph(id='state-transition', figure=state_transition(df))))
     return children
+
+
+# Function to convert an uploaded CSV to data frame
+def csv_to_df(contents, filename):
+    _, content_string = contents.split(',')
+    decoded = base64.b64decode(content_string)
+    try:
+        if 'csv' in filename:
+            df = pd.read_csv(io.StringIO(decoded.decode('utf-8')))
+            df = df.set_index('Unique ID')
+    except Exception as e:
+        print(e)
+        return "Error getting dataframe from csv"
+    return df
 
 ## Function to show images on hover
 def image_on_hover(hover_data):

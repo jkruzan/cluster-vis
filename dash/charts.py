@@ -51,11 +51,18 @@ def embed_scatter(df):
     cluster_order = {'Cluster':["Cluster "+ str(i) for i in range(cluster_min, cluster_max+1)]}
 
     # Get figure
-    fig = px.scatter(df, x='Embed1', y='Embed2',
-                    color='Cluster',
-                    hover_data={df.index.name: df.index},
-                    category_orders=cluster_order
-                    )
+    if 'Embed3' in df.columns:
+        fig = px.scatter_3d(df, x='Embed1', y='Embed2', z='Embed3',
+                        color='Cluster',
+                        hover_data={df.index.name: df.index},
+                        category_orders=cluster_order
+                        )
+    else:
+        fig = px.scatter(df, x='Embed1', y='Embed2',
+                        color='Cluster',
+                        hover_data={df.index.name: df.index},
+                        category_orders=cluster_order
+                        )
 
     fig.update_traces(
         hoverinfo='none',
@@ -70,8 +77,12 @@ def embed_scatter_heatmap(feature, df):
     '''
     # (currently not sampling data)
     # Get figure
-    fig = px.scatter(df, x='Embed1', y='Embed2',
-                    color=feature)
+    if 'Embed3' in df.columns:
+        fig = px.scatter_3d(df, x='Embed1', y='Embed2', z='Embed3',
+                        color=feature)
+    else:
+        fig = px.scatter(df, x='Embed1', y='Embed2', 
+                        color=feature)
 
     fig.update_traces(
         hoverinfo='none',
