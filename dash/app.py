@@ -90,7 +90,10 @@ def show_parallel_coords(graphs):
         children.append(html.H3("Parallel Coordinates"))
         children.append("Interpretation: The features selected from the dropdown above are each represented as a vertical axis. Each line on the graph represents an entry in the dataset. ")
         children.append("Consider a large fan-out from a single point on one axis to the next axis. If this is the case, these two features may not be correlated, whereas parallel lines or intersecting patterns may imply correlation. ")
-        children.append(dcc.Graph(id='parallel-coords'))
+        children.append(html.Br())
+        children.append(html.B("Tip: "))
+        children.append("Drag the lines along the axes to filter regions and drag the axis names across the plot to rearrange variables. ")
+        children.append(dcc.Graph(id='parallel-coords', clear_on_unhover=True))
     return children
 
 @app.callback(
@@ -180,7 +183,7 @@ def show_embed_clusters(graphs, contents, filename):
         df = DEFAULT_DF.copy() if contents is None else csv_to_df(contents, filename)
         if 'Embed1' in df.columns and 'Embed2' in df.columns:
             figure= embed_scatter(df)
-            children.append(dcc.Graph(id='embed-clusters', figure=figure))
+            children.append(dcc.Graph(id='embed-clusters', figure=figure, clear_on_unhover=True))
             children.append(dcc.Tooltip(id="embed-clusters-tooltip", direction='bottom'))
     return children
 
@@ -240,6 +243,8 @@ def show_expression_matrix(graphs, contents, filename):
     if 'Feature Expression Matrix' in graphs:
         df = DEFAULT_DF.copy() if contents is None else csv_to_df(contents, filename)
         children.append(html.H3("Expression Matrix"))
+        children.append("Interpretation: The figure below shows each feature's 'expression' mapped between -1 and 1 for the entire dataset, ordered by cluster, as indicted by the first row. ")
+        children.append("Features that are consistent in color for a given cluster and different across others may show the feature's importance for a cluster.")
         children.append(html.Center(dcc.Graph(id='expression-matrix', figure=correlation_matrix(df))))
     return children
 
