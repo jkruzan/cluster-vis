@@ -12,15 +12,6 @@ def get_feature_names(df, path=None):
         df = get_csv_df(path)
     return list(df.columns)
 
-def get_cluster_names_pretty(df):
-    if df is None:
-        print("LOADING CSV TO GET CLUSTER NAMES")
-        labels = get_csv_df()['Cluster'].values
-    else:
-        labels = df['Cluster'].values
-    min_label, max_label = labels.min(), labels.max()
-    return ["Cluster "+ str(i) for i in range(min_label, max_label+1)]
-
 def get_csv_df(path=None):
     print("LOAD THE BIG CSV")
     if path is None:

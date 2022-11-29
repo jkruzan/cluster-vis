@@ -88,6 +88,8 @@ def show_parallel_coords(graphs):
     children =[]
     if 'Parallel Coordinates' in graphs:
         children.append(html.H3("Parallel Coordinates"))
+        children.append("Interpretation: The features selected from the dropdown above are each represented as a vertical axis. Each line on the graph represents an entry in the dataset. ")
+        children.append("Consider a large fan-out from a single point on one axis to the next axis. If this is the case, these two features may not be correlated, whereas parallel lines or intersecting patterns may imply correlation. ")
         children.append(dcc.Graph(id='parallel-coords'))
     return children
 
@@ -113,6 +115,8 @@ def show_scatter_matrix(graphs):
     children =[]
     if 'Scatter Matrix' in graphs:
         children.append(html.H3("Scatter Matrix"))
+        children.append("Interpretation: The figure below shows a matrix of 2D scatter plots for each pair of features selected from the dropdown above. ")
+        children.append("Each plot can be used to show how any two features are related.")
         children.append(dcc.Graph(id='scatter-matrix'))
         children.append(dcc.Tooltip(id="scatter-matrix-tooltip", direction='bottom'))
     return children
@@ -155,6 +159,9 @@ def show_embed_div(graphs, contents, filename):
                 children.append(html.H3("3D Embedding"))
             else:
                 children.append(html.H3("2D Embedding"))
+            children.append("Interpretation: The following graphs show the dataset projected onto a 2 or 3D space. ")
+            children.append("Note that at least for the default dataset, the clustering was performed in a higher dimensional space so these visualizations will be less helpful than typical embedding plots ")
+            children.append("generated using clustering techniques that first reduce dimensions such as with tSNE or PCA.")
         else:
             children.append(html.H3("Embedding Graphs:"))
             children.append("Embedding graphs require columns labeled 'Embed1', 'Embed2', and optionally 'Embed3' to appear in the uploaded CSV.")
