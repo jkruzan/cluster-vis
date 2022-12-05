@@ -276,17 +276,21 @@ def correlation_matrix(df):
     df = df.sort_values(by='Cluster')
     # Remove all outliers
     df= df[(np.abs(stats.zscore(df)) < 3).all(axis=1)]
+    # Get rid of unneeded properties
+    df = df.reset_index()
+    # df.drop(labels=['Cell ID', 'Time'], axis=1, inplace=True)
+    df.drop(labels=['Cell ID', 'Time', 'Unique ID'], axis=1, inplace=True)
+    # Reverse columns
+    df = df[df.columns[::-1]]
+
+    # Copy before normalizing
+    ref = df.copy()
     # Get cluster data before normalizing it
     clusters = df['Cluster'].copy().to_numpy()
     # Normalize data to -1 to 1
     df = (df-df.min())/(df.max()-df.min())
     df = df.apply(lambda x: (x-0.5)*2)
 
-    # Get rid of unneeded properties
-    df = df.reset_index()
-    df.drop(labels=['Cell ID', 'Time', 'Unique ID'], axis=1, inplace=True)
-    # Reverse columns
-    df = df[df.columns[::-1]]
     #Plot it
     fig = px.imshow(df.transpose(),
                     x = df.index,
@@ -294,10 +298,11 @@ def correlation_matrix(df):
                     color_continuous_scale='RdBu_r',
                     origin='lower',
                     width=800, height=800)
-
+    ref = ref.transpose()
     clusters = np.repeat(clusters, len(df.columns)).reshape(-1, len(df.columns)).transpose()
-    fig.update(data=[{'customdata': clusters,
-                        'hovertemplate': "Cluster %{customdata}<br>Feature: %{y}" }])
+    hover_data = np.dstack((clusters,ref))
+    fig.update(data=[{'customdata': hover_data,
+                        'hovertemplate': "Cluster %{customdata[0]}<br>%{y}: %{customdata[1]}" }])
     fig.update_layout(autosize=True)
     fig.update_layout(width=800, height=800)
     fig.update_xaxes(showticklabels=False,visible=False)
