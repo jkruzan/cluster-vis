@@ -67,6 +67,7 @@ def embed_scatter(df):
     fig.update_traces(
         hoverinfo='none',
         hovertemplate=None,
+        marker_size=2
     )
     fig.update_layout(autosize=False, margin=dict(t=10))
     return fig
@@ -87,6 +88,7 @@ def embed_scatter_heatmap(feature, df):
     fig.update_traces(
         hoverinfo='none',
         hovertemplate=None,
+        marker_size=2
     )
     fig.update_layout(autosize=False, margin=dict(t=10))
     fig.update_layout(width=700, height=500)

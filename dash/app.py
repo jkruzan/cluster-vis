@@ -250,8 +250,14 @@ def show_expression_matrix(graphs, contents, filename):
     if 'Feature Expression Matrix' in graphs:
         df = DEFAULT_DF.copy() if contents is None else csv_to_df(contents, filename)
         children.append(html.H3("Expression Matrix"))
-        children.append("Interpretation: The figure below shows each feature's 'expression' mapped between -1 and 1 for the entire dataset, ordered by cluster, as indicted by the first row. ")
+        children.append("Interpretation: The figure below shows each feature's 'expression' mapped between -1 and 1 for the entire dataset, ordered by cluster from left to right. ")
         children.append("Features that are consistent in color for a given cluster and different across others may show the feature's importance for a cluster.")
+        children.append(html.Br())
+        children.append(html.B('Note: '))
+        children.append("Outliers were removed before min-max mapping of values from -1 to 1.")
+        children.append(html.Br())
+        children.append(html.B("Tip: "))
+        children.append("Clusters labels can be visually separated by the first row and observed by hovering over the data.")
         children.append(html.Center(dcc.Graph(id='expression-matrix', figure=correlation_matrix(df))))
     return children
 
