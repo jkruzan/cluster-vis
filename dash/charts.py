@@ -1,4 +1,4 @@
-from load_data import get_csv_df
+from scipy import stats
 import plotly.express as px
 import numpy as np
 import networkx as nx
@@ -272,6 +272,8 @@ def correlation_matrix(df):
     df = df.copy()
     # Order dataframe by cluster
     df = df.sort_values(by='Cluster')
+    # Remove all outliers
+    df= df[(np.abs(stats.zscore(df)) < 3).all(axis=1)]
     # Get cluster data before normalizing it
     clusters = df['Cluster'].copy().to_numpy()
     # Normalize data to -1 to 1
