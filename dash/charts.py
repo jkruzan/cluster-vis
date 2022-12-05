@@ -168,22 +168,21 @@ def make_arrows(edge_x, edge_y, probs, edgetups):
     fig.update_layout(annotations=annotations)
     fig.update_layout(showlegend=False)
     return fig, annotations
-def state_transition():
-    df = get_data_frame()
-    clusters = list(set(df["Cluster Label"].values))
+def state_transition(df):
+    clusters = list(set(df["Cluster"].values))
     clusters.sort()
     iddict = {}
     changes = {}
     for i in range(df.shape[0]):
         row = df.iloc[i]
         if row["Cell ID"] not in iddict:
-            iddict[row["Cell ID"]] = row["Cluster Label"]
+            iddict[row["Cell ID"]] = row["Cluster"]
         else:
             if iddict[row["Cell ID"]] not in changes:
-                changes[iddict[row["Cell ID"]]] = [row["Cluster Label"]]
+                changes[iddict[row["Cell ID"]]] = [row["Cluster"]]
             else:
-                changes[iddict[row["Cell ID"]]].append(row["Cluster Label"])
-            iddict[row["Cell ID"]] = row["Cluster Label"]
+                changes[iddict[row["Cell ID"]]].append(row["Cluster"])
+            iddict[row["Cell ID"]] = row["Cluster"]
     nclusters = len(clusters)
     G = nx.Graph()
     probs = {}
@@ -249,7 +248,7 @@ def state_transition():
 
     for node in G.nodes():
         node_adjacencies.append(node)
-        node_text.append('Cluster Label '+str(clusters[node]))
+        node_text.append('Cluster '+str(clusters[node]))
         annotations.append(dict(x=pos[node][0], y=pos[node][1],
                                       xanchor='auto', yanchor='auto',
                                       text=f"{probs[(clusters[node], clusters[node])]:.2f}",
