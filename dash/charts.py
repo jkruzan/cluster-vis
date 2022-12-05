@@ -81,7 +81,7 @@ def embed_scatter_heatmap(feature, df):
         fig = px.scatter_3d(df, x='Embed1', y='Embed2', z='Embed3',
                         color=feature)
     else:
-        fig = px.scatter(df, x='Embed1', y='Embed2', 
+        fig = px.scatter(df, x='Embed1', y='Embed2',
                         color=feature)
 
     fig.update_traces(
@@ -102,10 +102,10 @@ def make_arrows(edge_x, edge_y, probs, edgetups):
     norm = np.sqrt(np.square(u)+np.square(v))
     un = u/norm
     vn = v/norm
-    x1 = x+vn*0.05
-    y1 = y-un*0.05
-    x2 = x-vn*0.05
-    y2 = y+un*0.05
+    x1 = x+vn*0.08
+    y1 = y-un*0.08
+    x2 = x-vn*0.08
+    y2 = y+un*0.08
     oldx = x
     oldy = y
     x = []
@@ -118,6 +118,8 @@ def make_arrows(edge_x, edge_y, probs, edgetups):
     y1 = np.array([val for i in range(len(y1)) for val in [y1[i]-v[i]*0.5,y1[i]+v[i]*0.5,None] if probs[edgetups[i]] > 0.005])
     x2 = np.array([val for i in range(len(x2)) for val in [x2[i]-u[i]*0.5,x2[i]+u[i]*0.5,None] if probs[(edgetups[i][1], edgetups[i][0])] > 0.005])
     y2 = np.array([val for i in range(len(y2)) for val in [y2[i]-v[i]*0.5,y2[i]+v[i]*0.5,None] if probs[(edgetups[i][1], edgetups[i][0])] > 0.005])
+    lineprobs = np.array([probs[edgetups[i]] for i in range(len(oldx1)) if probs[edgetups[i]] > 0.005]+[probs[(edgetups[i][1], edgetups[i][0])] for i in range(len(oldx1)) if probs[(edgetups[i][1], edgetups[i][0])] > 0.005])
+    linecolors = [f"rgb({int(probs[edgetups[i]]*255/np.max(lineprobs))},0,0)" for i in range(len(oldx1)) if probs[edgetups[i]] > 0.005]+[f"rgb({int(probs[(edgetups[i][1], edgetups[i][0])]*255/np.max(lineprobs))},0,0)" for i in range(len(oldx2)) if probs[(edgetups[i][1], edgetups[i][0])] > 0.005]
     x = np.concatenate((x1, x2))
     y = np.concatenate((y1, y2))
     colors = [i for i in range(int(len(x)/3))]
@@ -127,15 +129,26 @@ def make_arrows(edge_x, edge_y, probs, edgetups):
     vn2 = np.array([vn[i] for i in range(len(vn)) if probs[(edgetups[i][1], edgetups[i][0])] > 0.005])
     #arrowx=[oldx[i] for i in range(len(oldx)) if probs[edgetups[i]] > 0.005]
     #y=[oldy[i] for i in range(len(oldy)) if probs[(edgetups[i][1], edgetups[i][0])] > 0.005]
-    line_trace = go.Scatter(mode="lines", x=x, y=y,line=dict(color="rgb(255,0,0)"))
-    fig = go.Figure(data=[line_trace])
+    x = x.reshape((-1, 3))
+    y = y.reshape((-1, 3))
+    line_traces = []
+    for i in range(len(x)):
+        line_traces.append(go.Scatter(mode="lines", x=x[i], y=y[i],line=dict(color=linecolors[i])))
+    #line_trace = go.Scatter(mode="lines", x=x, y=y,line=dict(color="rgb(255,0,0)"))
+
+    fig = go.Figure(data=line_traces)
     x12 = [oldx1[i] for i in range(len(oldx1)) if probs[edgetups[i]] > 0.005]
     y12 = [oldy1[i] for i in range(len(oldy1)) if probs[edgetups[i]] > 0.005]
-    arrows1 = ff.create_quiver(x12-un1*(0.25-0.0625*0.5), y12-vn1*(0.25-0.0625*0.5), un1, vn1,line=dict(color="#ff0000"), scale=0.25,hovertext=None, hoverinfo=None)
-    arrows2 = ff.create_quiver([oldx2[i] for i in range(len(oldx2)) if probs[(edgetups[i][1], edgetups[i][0])] > 0.005]+un2*(0.25-0.0625*0.5), [oldy2[i] for i in range(len(oldy2)) if probs[(edgetups[i][1], edgetups[i][0])] > 0.005]+vn2*(0.25-0.0625*0.5), -un2, -vn2,line=dict(color="#ff0000"), scale=0.25)
+    arrowsarr = []
+    for i in range(len(x12)):
+        arrows1 = ff.create_quiver([x12[i]-un1[i]*(0.25-0.0625*0.5)], [y12[i]-vn1[i]*(0.25-0.0625*0.5)], [un1[i]], [vn1[i]],line=dict(color=linecolors[i]), scale=0.25,hovertext=None, hoverinfo=None)
+        arrowsarr.append(arrows1)
+    for i in range(len(un2)):
+        arrows2 = ff.create_quiver([[oldx2[i] for i in range(len(oldx2)) if probs[(edgetups[i][1], edgetups[i][0])] > 0.005][i]+un2[i]*(0.25-0.0625*0.5)], [[oldy2[i] for i in range(len(oldy2)) if probs[(edgetups[i][1], edgetups[i][0])] > 0.005][i]+vn2[i]*(0.25-0.0625*0.5)], [-un2[i]], [-vn2[i]],line=dict(color=linecolors[i+len(x12)]), scale=0.25)
+        arrowsarr.append(arrows2)
     annotations = []
-    fig.add_traces(data=arrows1.data)
-    fig.add_traces(data=arrows2.data)
+    for arrow in arrowsarr:
+        fig.add_traces(data=arrow.data)
     for i in range(len(oldx1)):
         if probs[edgetups[i]] > 0.005:
             annotations.append(dict(x=oldx1[i]+vn[i]*0.05, y=oldy1[i]-un[i]*0.05,
@@ -155,24 +168,22 @@ def make_arrows(edge_x, edge_y, probs, edgetups):
     fig.update_layout(annotations=annotations)
     fig.update_layout(showlegend=False)
     return fig, annotations
-
-def state_transition(df=None):
-    print("LOADING DF FOR STATE TRANSITION")
-    df = get_csv_df()
-    clusters = list(set(df["Cluster"].values))
+def state_transition():
+    df = get_data_frame()
+    clusters = list(set(df["Cluster Label"].values))
     clusters.sort()
     iddict = {}
     changes = {}
     for i in range(df.shape[0]):
         row = df.iloc[i]
         if row["Cell ID"] not in iddict:
-            iddict[row["Cell ID"]] = row["Cluster"]
+            iddict[row["Cell ID"]] = row["Cluster Label"]
         else:
             if iddict[row["Cell ID"]] not in changes:
-                changes[iddict[row["Cell ID"]]] = [row["Cluster"]]
+                changes[iddict[row["Cell ID"]]] = [row["Cluster Label"]]
             else:
-                changes[iddict[row["Cell ID"]]].append(row["Cluster"])
-            iddict[row["Cell ID"]] = row["Cluster"]
+                changes[iddict[row["Cell ID"]]].append(row["Cluster Label"])
+            iddict[row["Cell ID"]] = row["Cluster Label"]
     nclusters = len(clusters)
     G = nx.Graph()
     probs = {}
@@ -219,13 +230,11 @@ def state_transition(df=None):
         mode='markers',
         hoverinfo='text',
         marker=dict(
-            showscale=True,
+            showscale=False,
             # colorscale options
             #'Greys' | 'YlGnBu' | 'Greens' | 'YlOrRd' | 'Bluered' | 'RdBu' |
             #'Reds' | 'Blues' | 'Picnic' | 'Rainbow' | 'Portland' | 'Jet' |
             #'Hot' | 'Blackbody' | 'Earth' | 'Electric' | 'Viridis' |
-            colorscale='Reds',
-            reversescale=True,
             color=[],
             size=60,
             colorbar=dict(
@@ -247,13 +256,15 @@ def state_transition(df=None):
                                       font=dict(family='Arial',
                                                 size=12),
                                       showarrow=False))
-    node_trace.marker.color = node_adjacencies
+
+    node_trace.marker.color = ["rgb(100,113,242)", "rgb(222,95,70)","rgb(92,200,154)","rgb(161,106,242)","rgb(242,165,103)","rgb(97,208,239)"]
+    print(node_adjacencies)
+    #node_trace.marker.color = ["rgb(255,0,0)"]*len(node_adjacencies)
     node_trace.text = node_text
     fig.add_trace(node_trace)
     fig.update_layout(width=800, height=800)
     fig.update_layout(annotations=annotations)
     return fig
-    
 def correlation_matrix(df):
     """
     Correlation matrix
@@ -267,7 +278,7 @@ def correlation_matrix(df):
     # Normalize data to -1 to 1
     df = (df-df.min())/(df.max()-df.min())
     df = df.apply(lambda x: (x-0.5)*2)
-    
+
     # Get rid of unneeded properties
     df = df.reset_index()
     df.drop(labels=['Cell ID', 'Time', 'Unique ID'], axis=1, inplace=True)
@@ -276,11 +287,11 @@ def correlation_matrix(df):
     #Plot it
     fig = px.imshow(df.transpose(),
                     x = df.index,
-                    y = df.columns, 
-                    color_continuous_scale='RdBu_r', 
+                    y = df.columns,
+                    color_continuous_scale='RdBu_r',
                     origin='lower',
                     width=800, height=800)
-    
+
     clusters = np.repeat(clusters, len(df.columns)).reshape(-1, len(df.columns)).transpose()
     fig.update(data=[{'customdata': clusters,
                         'hovertemplate': "Cluster %{customdata}<br>Feature: %{y}" }])
